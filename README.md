@@ -10,9 +10,7 @@
 ### 1. 프로젝트 클론
 
 ```bash
-git clone https://github.com/ksjj3765/Front.git
-cd Front
-git checkout Combined_repo_Ju
+git clone https://github.com/ksjj3765/Front.gitd
 ```
 
 ### 2. 환경 변수 설정
@@ -50,7 +48,7 @@ docker-compose logs -f post-service
 - **프론트엔드**: http://localhost:3000
 - **백엔드 API**: http://localhost:8081
 - **MinIO 콘솔**: http://localhost:9001
-- **MySQL**: localhost:3306
+- **MySQL**: http://localhost:3306
 
 ## 🔧 개발 환경 설정
 
@@ -118,10 +116,8 @@ docker-compose logs -f minio
 docker ps
 
 # 서비스 헬스체크
-curl http://localhost:8081/health
+curl http://localhost:8081/health # 백엔드 api  상태 확인 , 포스트 서비스 
 curl http://localhost:3000
 ```
 
 ---
-
-**Happy Coding! 🎉**
