@@ -20,13 +20,16 @@ class PostDetail extends Component {
       isLoading: true,
       error: null,
       activeCategory: "전체",
-      isLiked: false // 좋아요 상태
+      isLiked: false, // 좋아요 상태
+      comments: [], // 댓글 목록을 저장할 상태
+      newComment: "" // 새 댓글 내용을 저장할 상태
     };
     this.categories = ["전체", "동물/반려동물", "여행", "건강/헬스", "연예인"];
   }
 
   componentDidMount() {
     this.fetchPostDetail();
+    this.fetchComments(); // 컴포넌트 마운트 시 댓글 로드
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -133,8 +136,71 @@ class PostDetail extends Component {
     }
   };
 
+  // 댓글 목록을 가져오는 함수
+  fetchComments = async () => {
+    try {
+      const postId = this.props.params.postId;
+      const response = await fetch(`http://localhost:5000/api/v1/posts/${postId}/comments`);
+      if (!response.ok) {
+        throw new Error('댓글을 가져오는데 실패했습니다.');
+      }
+      const data = await response.json();
+      this.setState({ comments: data.comments || data.data || [] });
+    } catch (error) {
+      console.error('댓글 로드 오류:', error);
+    }
+  };
+
+  // 새 댓글 입력 핸들러
+  handleCommentChange = (e) => {
+    this.setState({ newComment: e.target.value });
+  };
+
+  // 댓글 제출 핸들러
+  handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!this.props.isLoggedIn) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    const { newComment, post } = this.state;
+    const { currentUser } = this.props;
+    
+    if (!newComment.trim()) {
+      alert('댓글 내용을 입력해주세요.');
+      return;
+    }
+
+    try {
+      const requestBody = {
+        user_id: currentUser.sub,
+        content: newComment
+      };
+
+      const response = await fetch(`http://localhost:5000/api/v1/posts/${post.id}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) {
+        throw new Error('댓글 작성에 실패했습니다.');
+      }
+
+      // 댓글 작성 성공 시 목록 다시 불러오기 및 입력창 초기화
+      this.setState({ newComment: "" });
+      this.fetchComments();
+    } catch (error) {
+      console.error('댓글 작성 오류:', error);
+      alert('댓글 작성 중 오류가 발생했습니다.');
+    }
+  };
+
   render() {
-    const { post, isLoading, error, isLiked } = this.state;
+    const { post, isLoading, error, isLiked, comments, newComment } = this.state;
     const { isLoggedIn, currentUser } = this.props;
 
     if (isLoading) {
@@ -238,185 +304,58 @@ class PostDetail extends Component {
               className={`like-button ${isLiked ? 'liked' : ''}`}
               onClick={this.handleLikeToggle}
             >
+              <Heart size={20} />
               {isLiked ? '좋아요 취소' : '좋아요'}
             </button>
             <span className="like-count">좋아요 {post.like_count || 0}</span>
           </div>
         </article>
 
-        <style jsx>{`
-          .post-detail-card {
-            background: #f8f9fa;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            padding: 24px;
-            margin-top: 20px;
-            border: 1px solid #e9ecef;
-          }
-
-          .post-category-header {
-            margin-bottom: 16px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #dee2e6;
-          }
-
-          .category-tag {
-            background: var(--primary);
-            color: var(--primary-foreground);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-          }
-
-          .post-title-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 16px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #dee2e6;
-          }
-
-          .post-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1e293b;
-            margin: 0;
-            flex: 1;
-            margin-right: 16px;
-          }
-
-          .post-creation-time {
-            color: #64748b;
-            font-size: 14px;
-            white-space: nowrap;
-          }
-
-          .post-meta-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #dee2e6;
-          }
-
-          .post-author {
-            color: #475569;
-            font-weight: 500;
-          }
-
-          .post-stats {
-            display: flex;
-            gap: 20px;
-          }
-
-          .stat-item {
-            color: #64748b;
-            font-size: 14px;
-          }
-
-          .post-content {
-            font-size: 16px;
-            line-height: 1.7;
-            color: #334155;
-            margin-bottom: 24px;
-            white-space: pre-wrap;
-            word-break: break-word;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #dee2e6;
-          }
-
-          .post-actions {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding-top: 16px;
-          }
-
-          .like-button {
-            padding: 10px 20px;
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            color: #64748b;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 14px;
-            font-weight: 500;
-          }
-
-          .like-button:hover {
-            background: #e2e8f0;
-            border-color: #cbd5e1;
-          }
-
-          .like-button.liked {
-            background: #fecaca;
-            border-color: #fca5a5;
-            color: #dc2626;
-          }
-
-          .like-count {
-            color: #64748b;
-            font-size: 14px;
-            font-weight: 500;
-          }
-
-          .back-button-container {
-            margin-bottom: 20px;
-          }
-
-          .back-button {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 16px;
-            background: none;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            color: #64748b;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 14px;
-          }
-
-          .back-button:hover {
-            background: #f8fafc;
-            border-color: #cbd5e1;
-            color: #475569;
-          }
-
-          .loading, .error {
-            text-align: center;
-            padding: 60px 20px;
-            font-size: 16px;
-            color: #64748b;
-          }
-
-          .error {
-            color: #ef4444;
-          }
-
-          @media (max-width: 768px) {
-            .post-title-section {
-              flex-direction: column;
-              gap: 12px;
-            }
-
-            .post-meta-section {
-              flex-direction: column;
-              gap: 16px;
-              align-items: flex-start;
-            }
-
-            .post-stats {
-              gap: 16px;
-            }
-          }
-        `}</style>
+        {/* 댓글 섹션 */}
+        <div className="comments-section">
+          <h2>댓글 ({comments.length})</h2>
+          {/* 댓글 입력 폼 */}
+          <form className="comment-form" onSubmit={this.handleCommentSubmit}>
+            <textarea
+              className="comment-input"
+              value={newComment}
+              onChange={this.handleCommentChange}
+              placeholder="댓글을 입력하세요..."
+              rows="3"
+            />
+            <button type="submit" className="comment-submit-btn">작성</button>
+          </form>
+          
+          {/* 댓글 목록 */}
+          <div className="comments-list">
+            {comments.length > 0 ? (
+              comments.map((comment, index) => (
+                <div key={index} className="comment-item">
+                  <div className="comment-meta">
+                    <span className="comment-author">
+                      <User size={14} style={{ marginRight: '4px' }} />
+                      {comment.author || 'Anonymous'}
+                    </span>
+                    <span className="comment-date">
+                      {new Date(comment.created_at).toLocaleString('ko-KR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  </div>
+                  <div className="comment-content">
+                    {comment.content}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="no-comments">아직 댓글이 없습니다.</p>
+            )}
+          </div>
+        </div>
       </CommonLayout>
     );
   }
