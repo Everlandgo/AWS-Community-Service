@@ -10,6 +10,7 @@
   --darker-bg: #c8cfd6;
   --dark-navy: #3e4a5b;
   --darker-navy: #353f4d;
+  --white-shine: #fff;
   --white: #fafafa;
   --white-shadow: #ececec;
   --text-default: #1e293b;
@@ -45,126 +46,10 @@ html, body {
   margin: 0;
   padding: 0;
   background-color: var(--default-bg);
-  overflow: hidden; /* Optional: Prevents scrollbars if content overflows */
+  overflow-x: hidden; /* Optional: Prevents scrollbars if content overflows */
+  overflow-y:auto;
 }
 
-/* Comment Section */
-.comments-section {
-  display: flex;
-  flex-direction: column;
-  align-items: start;
-  margin: 12px 0px;
-  padding: 24px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background-color: var(--white);
-  gap: 8px;
-}
-
-.comments-section h2 {
-  color: var(--subtitle);
-  font-size: 24px;
-  font-weight: 600;
-  margin-left: 12px;
-  margin-bottom: 12px;
-}
-
-.comment-form {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-  width: 100%;
-  gap: 16px;
-}
-
-.comment-input {
-  flex-grow: 1;
-  border: 1px solid var(--input);
-  border-radius: 400px;
-  padding: 16px 24px;
-  align-items: center;
-  font-size: 14px;
-  background-color: var(--white-shadow);
-  color: var(--text-default);
-  box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1);
-}
-
-.comment-input::placeholder {
-  color: var(--placeholder-grey);
-  font-size: 14px;
-}
-
-.comment-input:focus {
-  outline: none;
-  box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-}
-
-.comment-submit-btn {
-  background-color: var(--dark-navy);
-  color: var(--white);
-  border: none;
-  border-radius: 999px;
-  padding: 12px 24px;
-  cursor: pointer;
-  color: var(--white);
-  font-size: 14px;
-  box-shadow: 6px 6px 4px rgba(0,0,0,0.1);
-}
-
-.comment-submit-btn:active {
-  box-shadow: inset 4px 4px 4px rgba(0,0,0,0.1);
-}
-
-.comments-list {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  margin: 0px 8px;
-  gap: 10px;
-}
-
-.comment-item {
-  background: var(--white-shine);
-  padding: 16px;
-  border-radius: 12px;
-  border: 1px solid var(--white-shadow);
-}
-
-.comment-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  color: var(--subtitle);
-  font-size: 13px;
-  padding-bottom: 8px;
-}
-
-.comment-author {
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-}
-
-.comment-date {
-  font-weight: 400;
-}
-
-.comment-content {
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--text-default);
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.no-comments {
-  text-align: center;
-  color: var(--subtitle);
-  font-style: italic;
-}
 
 /* ===== 플로팅 액션 버튼 ===== */
 .floating-action-btn {
@@ -290,7 +175,7 @@ html, body {
   color: var(--foreground);
 }
 
-.form-input, .form-select, .form-textarea {
+/* .form-input, .form-select, .form-textarea {
   padding: 12px 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -304,7 +189,7 @@ html, body {
 .form-input:focus, .form-select:focus, .form-textarea:focus {
   border-color: var(--ring);
   box-shadow: 0 0 0 2px var(--ring);
-}
+} */
 
 .form-textarea {
   resize: vertical;
@@ -321,7 +206,7 @@ html, body {
 }
 
 /* ===== 로그인/회원가입 페이지 스타일 ===== */
-.auth-page {
+/* .auth-page {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -486,36 +371,13 @@ html, body {
   color: var(--destructive);
   font-size: 12px;
   margin-top: 4px;
-}
+} */
 
 /* ===== PostDetail 스타일 ===== */
 .post-detail-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 24px;
-}
-
-.back-button-container {
-  margin-bottom: 16px;
-}
-
-.back-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: none;
-  border: none;
-  color: var(--muted-foreground);
-  font-size: 14px;
-  cursor: pointer;
-  padding: 8px 16px;
-  border-radius: var(--radius);
-  transition: all 0.2s ease;
-}
-
-.back-button:hover {
-  background-color: var(--accent);
-  color: var(--accent-foreground);
 }
 
 .post-detail-card {
@@ -607,7 +469,7 @@ html, body {
   margin-bottom: 24px;
 }
 
-.back-button {
+/* .back-button {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -625,7 +487,7 @@ html, body {
 .back-button:hover {
   background-color: var(--accent);
   color: var(--accent-foreground);
-}
+} */
 
 .mypage-title {
   font-size: 2rem;
@@ -746,12 +608,12 @@ html, body {
   flex: 1;
 }
 
-.post-title {
+/* .post-title {
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--foreground);
   margin: 0 0 8px 0;
-}
+} */
 
 .post-excerpt {
   color: var(--muted-foreground);
@@ -832,6 +694,7 @@ html, body {
 }
 
 
+
 /* ===== 사용자 프로필 섹션 ===== */
 .user-profile-section {
   display: flex;
@@ -868,26 +731,6 @@ html, body {
 
 .logout-button:hover {
   background-color: var(--destructive-hover);
-}
-
-/* ===== 헤더 버튼 스타일 ===== */
-.header-button {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  background-color: var(--primary);
-  color: white;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.header-button:hover {
-  background-color: var(--primary-hover);
 }
 
 /* ===== 사이드바 스타일 ===== */
@@ -1190,12 +1033,12 @@ html, body {
   flex: 1;
 }
 
-.post-title {
+/* .post-title {
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--foreground);
   margin: 0 0 0.5rem 0;
-}
+} */
 
 .post-excerpt {
   color: var(--muted-foreground);
