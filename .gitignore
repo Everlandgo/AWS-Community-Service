@@ -1,0 +1,24 @@
+﻿# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.tfstate.lock.info
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Local/Secrets
+.env
+*.log
+*.tmp
+*.bak
+*.zip
+
+# Binaries/CLI (커밋 금지)
+*.exe
+
+# IDE
+.vscode/
+.idea/

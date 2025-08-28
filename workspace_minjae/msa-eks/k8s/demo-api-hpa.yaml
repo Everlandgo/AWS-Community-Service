@@ -1,0 +1,70 @@
+# 데모 애플리케이션(Deployment) + HPA 예시
+# - 기본적으로 Graviton 스팟 노드(role=burst, spotOnly 테인트)에 우선 배치
+# - 필요 시 amd64 전용 대체군(amd64Only 테인트)도 허용 가능하도록 주석 제공
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-api
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demo-api
+  template:
+    metadata:
+      labels:
+        app: demo-api
+    spec:
+      # 1) Graviton 스팟(burst) 우선: role=burst 선호
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: role
+                    operator: In
+                    values: ["burst"]
+      # 2) 스팟 전용 노드에 스케줄 가능 (spotOnly 테인트 허용)
+      tolerations:
+        - key: "spotOnly"
+          operator: "Exists"
+          effect: "NoSchedule"
+        # amd64 전용 대체군(옵션)을 허용하려면 아래 주석을 해제하세요.
+        # - key: "amd64Only"
+        #   operator: "Exists"
+        #   effect: "NoSchedule"
+      containers:
+        - name: demo-api
+          image: ealen/echo-server:latest
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: demo-api-hpa
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: demo-api
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
