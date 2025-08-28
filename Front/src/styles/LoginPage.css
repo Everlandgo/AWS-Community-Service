@@ -95,6 +95,7 @@
 }
 
 .form-label {
+  width: 20px;
   font-size: 14px;
   font-weight: 600;
   color: var(--white-shine);
@@ -184,8 +185,9 @@
   background-color: var(--white-shine);
   box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
 }
-.login-link:hover {
-  color: var(--color-title);
+.auth-link:active {
+  background-color: var(--white-shadow);
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.2);
 }
 
 

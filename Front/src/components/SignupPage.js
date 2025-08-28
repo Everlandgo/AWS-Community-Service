@@ -158,7 +158,6 @@ const SignupPage = ({ onSignup, navigate }) => {
           <form className="auth-form" onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label">
-                <Hash size={16} />
                 아이디
               </label>
               <input
@@ -170,12 +169,12 @@ const SignupPage = ({ onSignup, navigate }) => {
                 placeholder="아이디를 입력하세요"
                 required
               />
+              <p className='password-toggle'/>
               {errors.id && <span className="error-message">{errors.id}</span>}
             </div>
 
             <div className="form-group">
               <label className="form-label">
-                <Mail size={16} />
                 이메일
               </label>
               <input
@@ -187,12 +186,12 @@ const SignupPage = ({ onSignup, navigate }) => {
                 placeholder="이메일을 입력하세요"
                 required
               />
+              <p className='password-toggle'/>
               {errors.email && <span className="error-message">{errors.email}</span>}
             </div>
 
             <div className="form-group">
               <label className="form-label">
-                <Lock size={16} />
                 비밀번호
               </label>
               <div className="password-input-container">
@@ -218,7 +217,6 @@ const SignupPage = ({ onSignup, navigate }) => {
 
             <div className="form-group">
               <label className="form-label">
-                <Lock size={16} />
                 비밀번호 확인
               </label>
               <div className="password-input-container">
