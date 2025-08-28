@@ -63,7 +63,7 @@ const CommonLayout = ({ children, isLoggedIn, currentUser, navigate, hideSidebar
               <input
                 type="text"
                 className="search-input"
-                placeholder="게시글 검색..."
+                placeholder="게시글 검색"
                 value={searchTerm || ''}
                 onChange={onSearchChange ? (e) => onSearchChange(e) : undefined}
               />
@@ -117,7 +117,7 @@ const CommonLayout = ({ children, isLoggedIn, currentUser, navigate, hideSidebar
           </div>
         </div>
       </header>
-      
+
       <div className="main-board-container">
         <div className="main-content">
           {/* 왼쪽 사이드바 */}

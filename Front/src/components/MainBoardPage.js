@@ -189,12 +189,12 @@ class MainBoardPage extends Component {
           {/* 테이블 헤더 */}
           <div className="table-header">
             <div className="header-row">
-              <div className="header-cell category-cell">카테고리</div>
-              <div className="header-cell title-cell">제목</div>
-              <div className="header-cell author-cell">글쓴이</div>
-              <div className="header-cell date-cell">작성날짜</div>
-              <div className="header-cell views-cell">조회수</div>
-              <div className="header-cell likes-cell">좋아요</div>
+              <div className="header-cell">카테고리</div>
+              <div className="header-cell">제목</div>
+              <div className="header-cell">글쓴이</div>
+              <div className="header-cell">작성날짜</div>
+              <div className="header-cell">조회수</div>
+              <div className="header-cell">좋아요</div>
             </div>
           </div>
 
@@ -223,7 +223,7 @@ class MainBoardPage extends Component {
               <div className="no-posts" style={{ 
                 textAlign: 'center', 
                 padding: '40px', 
-                color: 'var(--muted-foreground)',
+                color: 'var(--white)',
                 fontSize: '16px',
                 gridColumn: '1 / -1'
               }}>
