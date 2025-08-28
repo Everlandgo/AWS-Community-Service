@@ -292,7 +292,9 @@
 /* ===== 오른쪽 메인 콘텐츠 ===== */
 .content-area {
   display: flex;
+  flex: 1;
   flex-direction: column;
+  padding: 24px;
   margin-left: 240px;
 }
 
