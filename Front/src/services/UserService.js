@@ -5,11 +5,9 @@ class UserService {
 
   // 인증 헤더 생성
   getAuthHeaders() {
-    const accessToken = localStorage.getItem('accessToken');
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`
-    };
+    // 공통 토큰 유틸리티 사용
+    const { createAuthHeaders } = require('../utils/tokenUtils');
+    return createAuthHeaders();
   }
 
   // 회원가입

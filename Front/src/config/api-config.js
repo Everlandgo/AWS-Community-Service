@@ -14,7 +14,7 @@ export const API_CONFIG = {
 
   // Post Service
   POST_SERVICE: {
-    BASE_URL: process.env.REACT_APP_POST_SERVICE_URL || 'http://localhost:8082',
+    BASE_URL: process.env.REACT_APP_POST_SERVICE_URL || 'http://localhost:8081',
     ENDPOINTS: {
       POSTS: '/posts',
       POST_DETAIL: '/posts/{postId}',
@@ -51,7 +51,7 @@ export const getApiConfig = (environment = 'development') => {
   const configs = {
     development: {
       USER_SERVICE_URL: 'http://localhost:8081',
-      POST_SERVICE_URL: 'http://localhost:8082',
+      POST_SERVICE_URL: 'http://localhost:8081',
       COMMENT_SERVICE_URL: 'http://localhost:8083'
     },
     staging: {

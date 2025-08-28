@@ -9,7 +9,7 @@ import MainBoardPage from './components/MainBoardPage';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
 import MyPage from './components/MyPage';
-import PostDetail from './components/PostDetail';
+import PostDetails from './components/PostDetails';
 import WritePostPage from './components/WritePostPage';
 
 // useNavigate를 클래스 컴포넌트에서 사용하기 위한 래퍼
@@ -24,7 +24,7 @@ const MainBoardPageWithNavigate = withNavigate(MainBoardPage);
 const LoginPageWithNavigate = withNavigate(LoginPage);
 const SignupPageWithNavigate = withNavigate(SignupPage);
 const MyPageWithNavigate = withNavigate(MyPage);
-const PostDetailWithNavigate = withNavigate(PostDetail);
+const PostDetailsWithNavigate = withNavigate(PostDetails);
 const WritePostPageWithNavigate = withNavigate(WritePostPage);
 
 // AWS Cognito 인증 상태를 관리하는 App 컴포넌트
@@ -173,7 +173,7 @@ class App extends Component {
           <Route
             path="/post/:postId"
             element={
-              <PostDetailWithNavigate
+              <PostDetailsWithNavigate
                 currentUser={currentUser}
                 isLoggedIn={isLoggedIn}
                 onLogout={this.handleLogout}

@@ -1,64 +1,45 @@
 class AuthService {
-  // 로그인
-  async login(username, password) {
-    return new Promise((resolve, reject) => {
-      // 간단한 검증 (실제로는 백엔드 API를 호출해야 함)
-      if (username && password) {
-        // 임시로 성공 처리 (실제로는 백엔드에서 검증)
-        const userData = {
-          username: username,
-          email: `${username}@example.com`,
-          accessToken: 'temp-access-token-' + Date.now(),
-          idToken: 'temp-id-token-' + Date.now()
-        };
-        
-        // 로컬 스토리지에 저장
-        localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('accessToken', userData.accessToken);
-        localStorage.setItem('idToken', userData.idToken);
-        
-        resolve(userData);
-      } else {
-        reject(new Error('사용자명과 비밀번호를 입력해주세요.'));
-      }
-    });
-  }
-
-  // 로그아웃
-  async logout() {
-    return new Promise((resolve) => {
-      // 로컬 스토리지에서 사용자 정보 제거
-      localStorage.removeItem('user');
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('idToken');
-      resolve();
-    });
-  }
-
-  // 현재 사용자 정보 가져오기
-  async getCurrentUser() {
-    return new Promise((resolve) => {
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        resolve(JSON.parse(userData));
-      } else {
-        resolve(null);
-      }
-    });
-  }
-
-  // 토큰 유효성 검사
+  // Cognito JWT 토큰 유효성 검사
   isTokenValid() {
-    const accessToken = localStorage.getItem('accessToken');
-    return !!accessToken;
+    const savedTokens = localStorage.getItem('cognitoTokens');
+    if (!savedTokens) return false;
+    
+    try {
+      const tokens = JSON.parse(savedTokens);
+      const accessToken = tokens.accessToken || tokens.idToken;
+      
+      if (!accessToken) return false;
+      
+      // JWT 토큰 만료 여부 확인
+      const base64Url = accessToken.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const tokenData = JSON.parse(atob(base64));
+      
+      const currentTime = Math.floor(Date.now() / 1000);
+      return tokenData.exp && tokenData.exp > currentTime;
+    } catch (error) {
+      console.warn('토큰 검증 실패:', error);
+      return false;
+    }
   }
 
-  // 현재 저장된 토큰 가져오기
+  // 현재 저장된 Cognito 토큰 가져오기
   getStoredTokens() {
-    return {
-      accessToken: localStorage.getItem('accessToken'),
-      idToken: localStorage.getItem('idToken')
-    };
+    const savedTokens = localStorage.getItem('cognitoTokens');
+    if (!savedTokens) return null;
+    
+    try {
+      return JSON.parse(savedTokens);
+    } catch (error) {
+      console.warn('토큰 파싱 실패:', error);
+      return null;
+    }
+  }
+
+  // 토큰 만료 시 정리
+  clearExpiredTokens() {
+    localStorage.removeItem('cognitoTokens');
+    localStorage.removeItem('currentUser');
   }
 }
 

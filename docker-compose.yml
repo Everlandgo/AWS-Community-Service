@@ -1,7 +1,5 @@
 # E2E 스모크 테스트를 위한 완전한 개발 환경
-# MySQL + MinIO + Post Service + React Frontend
-
-version: '3.8'
+# MySQL + MinIO + Post Service + Comment Service + React Frontend
 
 # 프로젝트 이름 설정
 name: post-project
@@ -16,6 +14,7 @@ services:
       MYSQL_DATABASE: postdb
       MYSQL_USER: postuser
       MYSQL_PASSWORD: postpass
+      MYSQL_MULTIPLE_DATABASES: postdb,commentdb
     ports:
       - "3306:3306"
     volumes:
@@ -47,7 +46,7 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
 
   # Post 서비스 (Flask 애플리케이션)
@@ -76,7 +75,37 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  # Comment 서비스 (Flask 애플리케이션)
+  comment-service:
+    build: ./Comment-master
+    container_name: comment-service
+    ports:
+      - "8083:8083"
+    environment:
+      - FLASK_APP=app
+      - FLASK_ENV=development
+      - DATABASE_URL=mysql+pymysql://postuser:postpass@mysql:3306/commentdb   # ✅ 수정됨
+      - COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}
+      - COGNITO_REGION=${COGNITO_REGION}
+      - COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=ap-northeast-2
+    volumes:
+      - ./Comment-master:/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - post-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
+      interval: 30s
+      timeout: 5s
       retries: 3
       start_period: 40s
 
@@ -88,12 +117,15 @@ services:
       - "3000:3000"
     environment:
       - REACT_APP_API_URL=http://localhost:8081/api/v1
+      - REACT_APP_COMMENT_SERVICE_URL=http://localhost:8083
       - REACT_APP_MINIO_URL=http://localhost:9000
     volumes:
       - ./Front:/app
       - /app/node_modules
     depends_on:
       post-service:
+        condition: service_healthy
+      comment-service:
         condition: service_healthy
     networks:
       - post-network
