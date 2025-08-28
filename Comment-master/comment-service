@@ -1,6 +1,0 @@
-<script>start("c:\\Users\\SD1-13\\Desktop\\AWS Community Project 최종\\backend\\comment-service\\");</script>
-<script>onHasParentDirectory();</script>
-<script>addRow("app","app",1,0,"0 B",1756255832,"8/27/25, 9:50:32 AM");</script>
-<script>addRow("comment.db","comment.db",0,36864,"36.0 kB",1756256191,"8/27/25, 9:56:31 AM");</script>
-<script>addRow("Dockerfile","Dockerfile",0,535,"535 B",1756254719,"8/27/25, 9:31:59 AM");</script>
-<script>addRow("requirements.txt","requirements.txt",0,168,"168 B",1756254719,"8/27/25, 9:31:59 AM");</script>

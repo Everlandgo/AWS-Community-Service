@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { ArrowLeft, Heart, User } from 'lucide-react';
 import CommonLayout from './CommonLayout';
 import CommentService from '../services/CommentService';
-import { getCognitoToken, decodeToken } from '../utils/tokenUtils';
 
 // useParams를 클래스 컴포넌트에서 사용하기 위한 래퍼
 function withParams(Component) {
@@ -62,8 +61,6 @@ class PostDetails extends Component {
 
   // 좋아요 토글
   handleLikeToggle = async () => {
-    // debug logs removed
-
     if (!this.props.isLoggedIn) {
       alert('로그인이 필요합니다.');
       return;
@@ -80,8 +77,6 @@ class PostDetails extends Component {
       const requestBody = {
         user_id: this.props.currentUser.sub
       };
-      
-      // debug logs removed
       
       const response = await fetch(`http://localhost:8081/api/v1/posts/${this.state.post.id}/like`, {
         method: 'POST',
@@ -127,13 +122,12 @@ class PostDetails extends Component {
         post: data.post || data.data, 
         isLoading: false 
       });
-    } catch (error) {
-      // simplify error log
-      this.setState({ 
-        error: error.message, 
-        isLoading: false 
-      });
-    }
+         } catch (error) {
+       this.setState({ 
+         error: error.message, 
+         isLoading: false 
+       });
+     }
   };
 
   // 댓글 목록을 가져오는 함수
@@ -150,15 +144,13 @@ class PostDetails extends Component {
         this.setState({ comments });
         // 댓글별 좋아요 상태 초기화
         this.initCommentLikeStatus(comments);
-      } else {
-        // keep UI stable on failure
-        this.setState({ comments: [] });
-      }
-    } catch (error) {
-      // simplify error log
-      // 에러 발생 시 빈 배열로 설정하여 UI가 깨지지 않도록 함
-      this.setState({ comments: [] });
-    }
+             } else {
+         this.setState({ comments: [] });
+       }
+     } catch (error) {
+       // 에러 발생 시 빈 배열로 설정하여 UI가 깨지지 않도록 함
+       this.setState({ comments: [] });
+     }
   };
 
   // 댓글별 좋아요 상태 불러오기
@@ -187,69 +179,7 @@ class PostDetails extends Component {
     this.setState({ newComment: e.target.value });
   };
 
-  // JWT 토큰 유효성 검사 및 갱신
-  checkAndRefreshToken = async () => {
-    try {
-      // App.js에서 저장한 토큰 구조와 일치하도록 수정
-      const savedTokens = localStorage.getItem('cognitoTokens');
-      if (!savedTokens) {
-        // 토큰이 없으면 로그아웃 처리
-        this.handleTokenExpired();
-        return false;
-      }
-      
-      const tokens = JSON.parse(savedTokens);
-      const accessToken = tokens.accessToken || tokens.idToken;
-      
-      if (!accessToken) {
-        this.handleTokenExpired();
-        return false;
-      }
-      
-      // JWT 토큰 디코딩 (Base64URL 디코딩)
-      try {
-        const base64Url = accessToken.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const tokenData = JSON.parse(atob(base64));
-        
-        // 토큰 만료 여부 확인
-        const currentTime = Math.floor(Date.now() / 1000);
-        
-        if (tokenData.exp && tokenData.exp < currentTime) {
-          // 토큰 만료 - 로그아웃 처리
-          this.handleTokenExpired();
-          return false;
-        }
-        
-        return true;
-      } catch (decodeError) {
-        // simplify error log
-        this.handleTokenExpired();
-        return false;
-      }
-    } catch (error) {
-      // simplify error log
-      this.handleTokenExpired();
-      return false;
-    }
-  };
 
-  // 토큰 만료 시 처리
-  handleTokenExpired = () => {
-    // silent logout cleanup
-    
-    // 로컬 스토리지 정리
-    localStorage.removeItem('cognitoTokens');
-    localStorage.removeItem('currentUser');
-    
-    // 부모 컴포넌트에 로그아웃 알림
-    if (this.props.onLogout) {
-      this.props.onLogout();
-    }
-    
-    // 로그인 페이지로 리다이렉트
-    this.props.navigate('/login');
-  };
 
   // 댓글 제출 핸들러
   handleCommentSubmit = async (e) => {
@@ -276,18 +206,16 @@ class PostDetails extends Component {
       // CommentService.createComment 호출
       const result = await CommentService.createComment(post.id, commentData);
       
-      if (result.success) {
-        // 댓글 작성 성공 시 목록 다시 불러오기 및 입력창 초기화
-        this.setState({ newComment: "" });
-        this.fetchComments();
-        // refresh list
-      } else {
+             if (result.success) {
+         // 댓글 작성 성공 시 목록 다시 불러오기 및 입력창 초기화
+         this.setState({ newComment: "" });
+         this.fetchComments();
+       } else {
         throw new Error(result.message || '댓글 작성에 실패했습니다.');
       }
-    } catch (error) {
-      // notify user
-      alert(error.message || '댓글 작성 중 오류가 발생했습니다.');
-    }
+         } catch (error) {
+       alert(error.message || '댓글 작성 중 오류가 발생했습니다.');
+     }
   };
 
   // 댓글 좋아요 토글
@@ -310,10 +238,9 @@ class PostDetails extends Component {
       } else {
         throw new Error('댓글 좋아요 처리 실패');
       }
-    } catch (e) {
-      // notify user
-      alert('댓글 좋아요 처리 중 오류가 발생했습니다.');
-    }
+         } catch (e) {
+       alert('댓글 좋아요 처리 중 오류가 발생했습니다.');
+     }
   };
 
   // 댓글 수정 시작
@@ -350,29 +277,20 @@ class PostDetails extends Component {
       } else {
         throw new Error('댓글 수정 실패');
       }
-    } catch (e) {
-      // notify user
-      alert('댓글 수정 중 오류가 발생했습니다.');
-    }
+         } catch (e) {
+       alert('댓글 수정 중 오류가 발생했습니다.');
+     }
   };
 
-  // 현재 사용자 sub 추출 (props → 토큰 디코드 폴백)
+  // 현재 사용자 sub 추출
   getCurrentUserSub = () => {
-    try {
-      if (this.props.currentUser?.sub) return this.props.currentUser.sub;
-      const token = getCognitoToken();
-      if (!token) return null;
-      const decoded = decodeToken(token);
-      return decoded?.sub || null;
-    } catch (_) {
-      return null;
-    }
+    return this.props.currentUser?.sub || null;
   };
 
   // 댓글 소유자 여부
   isOwner = (comment) => {
-    const sub = this.getCurrentUserSub();
-    return !!sub && sub === comment.user_id;
+    const currentUserSub = this.getCurrentUserSub();
+    return currentUserSub && comment.user_id && currentUserSub === comment.user_id;
   };
 
   // 댓글 삭제
@@ -389,16 +307,14 @@ class PostDetails extends Component {
       } else {
         throw new Error('댓글 삭제 실패');
       }
-    } catch (e) {
-      // notify user
-      alert('댓글 삭제 중 오류가 발생했습니다.');
-    }
+         } catch (e) {
+       alert('댓글 삭제 중 오류가 발생했습니다.');
+     }
   };
 
   render() {
     const { post, isLoading, error, isLiked, comments, newComment } = this.state;
     const { isLoggedIn } = this.props;
-    const currentUserSub = this.getCurrentUserSub();
 
     if (isLoading) {
       return (
@@ -578,12 +494,13 @@ class PostDetails extends Component {
                       </button>
                       <span className="comment-like-count">좋아요 {comment.like_count || 0}</span>
                     </div>
-                    {isLoggedIn && this.state.editingCommentId !== comment.id && (
-                      <div className="comment-owner-actions">
-                        <button type="button" className="comment-btn" onClick={() => this.handleStartEdit(comment)}>수정</button>
-                        <button type="button" className="comment-btn" onClick={() => this.handleDelete(comment.id)}>삭제</button>
-                      </div>
-                    )}
+                    
+                                         {isLoggedIn && this.isOwner(comment) && this.state.editingCommentId !== comment.id && (
+                       <div className="comment-owner-actions">
+                         <button type="button" className="comment-btn" onClick={() => this.handleStartEdit(comment)}>수정</button>
+                         <button type="button" className="comment-btn" onClick={() => this.handleDelete(comment.id)}>삭제</button>
+                       </div>
+                     )}
                   </div>
                 </div>
               ))
