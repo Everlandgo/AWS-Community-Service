@@ -8,10 +8,12 @@
   --white: #fafafa;
   --white-shadow: #ececec;
   --text-default: #1e293b;
+  --text-light: #2c384a;
   --placeholder-grey: #707274d8;
   --placeholder-white: #eff2f5d8;
   --title: #1e293b;
   --subtitle: #485362;
+  --posttitle: #1d2025;
   --primary: hsl(222.2 47.4% 11.2%);
   --primary-foreground: hsl(210 40% 98%);
   --secondary: hsl(210 40% 96%);
@@ -49,14 +51,14 @@
 }
 
 .header-content {
-    width: 100%;
-    padding: 32px 24px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: var(--default-bg);
-    gap: 24px;
+  width: 100%;
+  padding: 32px 24px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--default-bg);
+  gap: 24px;
 }
 
 /* 로고 영역 */
@@ -117,13 +119,13 @@
 }
 
 .search-button {
-    background: none;
-    width: 20px;
-    height: 20px;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    color: var(--darker-bg);
+  background: none;
+  width: 20px;
+  height: 20px;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--darker-bg);
 }
 
 /* 헤더 오른쪽 액션 */
@@ -137,46 +139,21 @@
   flex-shrink: 0;
 }
 
-/* .nav-links {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-}
-
-.nav-link {
-  color: var(--muted-foreground);
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s ease;
-  padding: 8px 12px;
-  border-radius: var(--radius);
-}
-
-.nav-link:hover {
-  color: var(--foreground);
-  background-color: var(--accent);
-}
-
-.nav-link.active {
-  color: var(--primary);
-  background-color: var(--accent);
-} */
-
 .header-button {
-    flex-shrink: 0;
-    padding: 10px 20px;
-    align-items: center;
-    border-radius: 999px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.2s;
-    font-size: 14px;
-    box-shadow: outset 0 2px 4px rgba(0,0,0,0.1);
-    cursor: pointer;
-    
-    background-color: var(--dark-navy);
-    color: var(--white);
-    border: none;
+  flex-shrink: 0;
+  padding: 10px 20px;
+  align-items: center;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  font-size: 14px;
+  box-shadow: outset 0 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+  
+  background-color: var(--dark-navy);
+  color: var(--white);
+  border: none;
 }
 
 .header-button:first-child {
@@ -192,15 +169,15 @@
   gap: 8px;
   padding: 8px 12px;
   border-radius: var(--radius);
-  background-color: var(--accent);
+  background-color: var(--white);
   color: var(--dark-navy);
 }
 
 .user-icon {
   width: 24px;
   height: 24px;
-  background-color: var(--default-bg);
-  border-radius: 50%;
+  background-color: var(--darker-bg);
+  border-radius: var(--radius);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -208,12 +185,20 @@
   font-size: 12px;
 }
 
+.logout-button {
+  height: 40px;
+  width: 40px;
+  border-radius: var(--radius);
+  background-color: var(--dark-navy);
+  color: var(--white-shine);
+}
+
+/* ===== 메인 콘텐츠 영역 ===== */
 .main-board-container {
   display: flex;
   width: 100%;
 }
 
-/* ===== 메인 콘텐츠 영역 ===== */
 .main-content {
   flex: 1;
   display: flex;
@@ -278,18 +263,22 @@
 }
 
 /* ==== 글쓰기 버튼 === */
+.action-section {
+  margin: 12px 0px;
+}
+
 .write-post-button {
-  width: 120px;
-  padding: 6px 4px;
+  width: 100px;
+  padding: 8px 12px;
+  align-content: center;
   border: none;
-  border-radius: 9999px;
+  border-radius: 999px;
   background-color: var(--dark-navy);
-  color: var(--white);
-  font-size: 24px;
-  font-weight: 600;
+  color: var(--white-shine);
+  font-size: 16px;
+  font-weight: 500;
   cursor: pointer;
   box-shadow: outset 0 2px 4px rgba(0,0,0,0.2);
-  transition: background-color 0.2s, transform 0.2s;
 }
 
 /* ===== 오른쪽 메인 콘텐츠 ===== */
