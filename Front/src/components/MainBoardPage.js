@@ -156,7 +156,7 @@ class MainBoardPage extends Component {
       >
         {/* 필터 및 정렬 섹션 */}
         <div className="filter-section">
-          <div className="category-filters">
+          {/* <div className="category-filters">
             {this.categories.slice(1).map((category) => (
               <button
                 key={category}
@@ -166,7 +166,7 @@ class MainBoardPage extends Component {
                 {category}
               </button>
             ))}
-          </div>
+          </div> */}
           
           <div className="sort-buttons">
             <button
@@ -232,101 +232,6 @@ class MainBoardPage extends Component {
             )}
           </div>
         </div>
-
-        <style jsx>{`
-          .posts-table {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            margin-top: 20px;
-          }
-
-          .table-header {
-            background: #f8f9fa;
-            border-bottom: 2px solid #e9ecef;
-          }
-
-          .header-row {
-            display: grid;
-            grid-template-columns: 100px 1fr 120px 120px 80px 80px;
-            gap: 1px;
-            background: #f8f9fa;
-          }
-
-          .header-cell {
-            padding: 16px 12px;
-            font-weight: 600;
-            color: #495057;
-            text-align: left;
-            border-right: 1px solid #e9ecef;
-          }
-
-          .header-cell:last-child {
-            border-right: none;
-          }
-
-          .category-cell { text-align: center; }
-          .author-cell { text-align: center; }
-          .date-cell { text-align: center; }
-          .views-cell { text-align: center; }
-          .likes-cell { text-align: center; }
-
-          .table-body {
-            background: white;
-          }
-
-          .table-row {
-            display: grid;
-            grid-template-columns: 100px 1fr 120px 120px 80px 80px;
-            gap: 1px;
-            border-bottom: 1px solid #e9ecef;
-            transition: background-color 0.2s;
-          }
-
-          .table-row:hover {
-            background-color: #f8f9fa;
-          }
-
-          .table-cell {
-            padding: 16px 12px;
-            border-right: 1px solid #e9ecef;
-            display: flex;
-            align-items: center;
-          }
-
-          .table-cell:last-child {
-            border-right: none;
-          }
-
-          .category-tag {
-            background: var(--primary);
-            color: var(--primary-foreground);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 500;
-          }
-
-          .post-title-link {
-            color: #212529;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
-          }
-
-          .post-title-link:hover {
-            color: var(--primary);
-          }
-
-          .no-posts {
-            grid-column: 1 / -1;
-            padding: 40px;
-            text-align: center;
-            color: var(--muted-foreground);
-            font-size: 16px;
-          }
-        `}</style>
       </CommonLayout>
     );
   }

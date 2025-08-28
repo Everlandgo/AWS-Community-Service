@@ -1,5 +1,6 @@
 import React from 'react';
 import { Search, Plus, User, Home, LogIn, UserPlus, LogOut } from 'lucide-react';
+import "../styles/CommonLayout.css";
 
 const CommonLayout = ({ children, isLoggedIn, currentUser, navigate, hideSidebar = false, activeCategory, onCategoryChange, searchTerm = '', onSearchChange, onWritePost, onLogout }) => {
   const categories = ["전체", "동물/반려동물", "여행", "건강/헬스", "연예인"];
@@ -106,11 +107,9 @@ const CommonLayout = ({ children, isLoggedIn, currentUser, navigate, hideSidebar
               ) : (
                 <>
                   <button className="header-button" onClick={handleSignupClick}>
-                    <UserPlus size={16} />
                     회원가입
                   </button>
                   <button className="header-button" onClick={handleLoginClick}>
-                    <LogIn size={16} />
                     로그인
                   </button>
                 </>
