@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Heart, MessageCircle, Eye, User, Search } from 'lucide-react';
 import CommonLayout from './CommonLayout';
+import "../styles/PostDetail.css"
 
 // useParams를 클래스 컴포넌트에서 사용하기 위한 래퍼
 function withParams(Component) {

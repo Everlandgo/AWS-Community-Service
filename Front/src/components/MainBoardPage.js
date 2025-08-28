@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import CommonLayout from './CommonLayout';
+import "../styles/MainBoardPage.css"
 
 class MainBoardPage extends Component {
   constructor(props) {

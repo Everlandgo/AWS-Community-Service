@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import CommonLayout from './CommonLayout';
+import "../styles/LoginPage.css"
 
 class LoginPage extends Component {
   constructor(props) {
