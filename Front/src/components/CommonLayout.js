@@ -43,81 +43,82 @@ const CommonLayout = ({ children, isLoggedIn, currentUser, navigate, hideSidebar
 
   return (
     <div className="main-board-wrapper">
-      <div className="main-board-container">
-        {/* 상단 헤더 */}
-        <header className="main-header">
-          <div className="header-content">
-            <div className="logo-section">
-              <button
-                className="logo-placeholder"
-                onClick={handleHomeClick}
-                style={{ cursor: 'pointer', border: 'none' }}
-                title="홈으로 이동"
-              >
-                C
+    
+      {/* 상단 헤더 */}
+      <header className="main-header">
+        <div className="header-content">
+          <div className="logo-section">
+            <button
+              className="logo-placeholder"
+              onClick={handleHomeClick}
+              style={{ cursor: 'pointer', border: 'none' }}
+              title="홈으로 이동"
+            >
+              C
+            </button>
+          </div>
+
+          <div className="search-section">
+            <div className="search-bar-container">
+              <input
+                type="text"
+                className="search-input"
+                placeholder="게시글 검색..."
+                value={searchTerm || ''}
+                onChange={onSearchChange ? (e) => onSearchChange(e) : undefined}
+              />
+              <button className="search-button">
+                <Search size={16} />
               </button>
             </div>
+          </div>
 
-            <div className="search-section">
-              <div className="search-bar-container">
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="게시글 검색..."
-                  value={searchTerm || ''}
-                  onChange={onSearchChange ? (e) => onSearchChange(e) : undefined}
-                />
-                <button className="search-button">
-                  <Search size={16} />
+          <div className="header-actions">
+            {isLoggedIn ? (
+              <div className="user-profile-section">
+                <div className="user-profile" onClick={handleUserClick} style={{ cursor: 'pointer' }}>
+                  {/* 디버깅용 콘솔 로그 */}
+                  {console.log('CommonLayout - currentUser:', currentUser)}
+                  {console.log('CommonLayout - currentUser.username:', currentUser?.username)}
+                  {console.log('CommonLayout - currentUser.sub:', currentUser?.sub)}
+                  {console.log('CommonLayout - currentUser.email:', currentUser?.email)}
+                  
+                  <div className="user-icon">
+                    {currentUser?.username?.charAt(0)?.toUpperCase() || 
+                      currentUser?.sub?.charAt(0)?.toUpperCase() || 
+                      currentUser?.email?.charAt(0)?.toUpperCase() || 
+                      'U'}
+                  </div>
+                  <span>
+                    {currentUser?.username || 
+                      currentUser?.sub || 
+                      currentUser?.email?.split('@')[0] || 
+                      '사용자'}
+                  </span>
+                </div>
+                <button 
+                  className="logout-button" 
+                  onClick={handleLogoutClick}
+                  title="로그아웃"
+                >
+                  <LogOut size={16} />
                 </button>
               </div>
-            </div>
-
-            <div className="header-actions">
-              {isLoggedIn ? (
-                <div className="user-profile-section">
-                  <div className="user-profile" onClick={handleUserClick} style={{ cursor: 'pointer' }}>
-                    {/* 디버깅용 콘솔 로그 */}
-                    {console.log('CommonLayout - currentUser:', currentUser)}
-                    {console.log('CommonLayout - currentUser.username:', currentUser?.username)}
-                    {console.log('CommonLayout - currentUser.sub:', currentUser?.sub)}
-                    {console.log('CommonLayout - currentUser.email:', currentUser?.email)}
-                    
-                    <div className="user-icon">
-                      {currentUser?.username?.charAt(0)?.toUpperCase() || 
-                       currentUser?.sub?.charAt(0)?.toUpperCase() || 
-                       currentUser?.email?.charAt(0)?.toUpperCase() || 
-                       'U'}
-                    </div>
-                    <span>
-                      {currentUser?.username || 
-                       currentUser?.sub || 
-                       currentUser?.email?.split('@')[0] || 
-                       '사용자'}
-                    </span>
-                  </div>
-                  <button 
-                    className="logout-button" 
-                    onClick={handleLogoutClick}
-                    title="로그아웃"
-                  >
-                    <LogOut size={16} />
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <button className="header-button" onClick={handleSignupClick}>
-                    회원가입
-                  </button>
-                  <button className="header-button" onClick={handleLoginClick}>
-                    로그인
-                  </button>
-                </>
-              )}
-            </div>
+            ) : (
+              <>
+                <button className="header-button" onClick={handleSignupClick}>
+                  회원가입
+                </button>
+                <button className="header-button" onClick={handleLoginClick}>
+                  로그인
+                </button>
+              </>
+            )}
           </div>
-        </header>
-
+        </div>
+      </header>
+      
+      <div className="main-board-container">
         <div className="main-content">
           {/* 왼쪽 사이드바 */}
           <aside className="sidebar">

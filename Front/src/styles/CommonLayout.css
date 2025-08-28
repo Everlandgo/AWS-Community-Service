@@ -37,19 +37,14 @@
 }
 
 
-.main-board-container {
-  display: flex;
-  width: 100%;
-}
-
-
 /* ===== 상단 헤더 (전체 너비) ===== */
 .main-header {
-    width: 100vw;
-    display: flex;
-    position: absolute;
-    top: 0;
-    z-index: 100;
+  width: 100vw;
+  height: 150px;
+  display: flex;
+  position: absolute;
+  top: 0;
+  z-index: 100;
 }
 
 .header-content {
@@ -210,13 +205,19 @@
   font-size: 12px;
 }
 
+.main-board-container {
+  display: flex;
+  width: 100%;
+}
+
 /* ===== 메인 콘텐츠 영역 ===== */
-.main-content-area {
+.main-content {
   flex: 1;
   display: flex;
   margin: 0 auto;
   width: 100%;
   padding: 24px;
+  margin-top: 150px;
   gap: 32px;
 }
 /* ===== 왼쪽 사이드바 (카테고리) ===== */
@@ -267,4 +268,16 @@
   background-color: #ffffffb0;
   font-weight: 550;
   color: var(--color-text-default);
+}
+
+/* ===== 오른쪽 메인 콘텐츠 ===== */
+.content-area {
+  display: flex;
+  flex-direction: column;
+  margin-left: 240px;
+}
+
+.content-main.full-width {
+  width: 100%;
+  max-width: none;
 }
