@@ -214,17 +214,17 @@
 .main-content {
   flex: 1;
   display: flex;
-  margin: 0 auto;
+  margin: 0;
   width: 100%;
   padding: 24px;
   margin-top: 150px;
-  gap: 32px;
 }
+
 /* ===== 왼쪽 사이드바 (카테고리) ===== */
 .sidebar {
   width: 240px;
   background-color: transparent; 
-  padding: 32px 24px;
+  padding: 32px 12px;
   margin-top: 128px;
   display: flex;
   flex-direction: column;
@@ -234,17 +234,21 @@
   height: 100vh;
 }
 
-.category-title {
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-title {
   font-size: 18px;
   font-weight: 600;
   color: var(--title);
-  margin-left: 16px;
   margin-bottom: 24px;
 }
 
 .category-list {
-    list-style: none;
-    padding: 0;
+  list-style: none;
+  padding: 0;
 }
 
 .category-list button {
@@ -268,6 +272,21 @@
   background-color: #ffffffb0;
   font-weight: 550;
   color: var(--color-text-default);
+}
+
+/* ==== 글쓰기 버튼 === */
+.write-post-button {
+  width: 120px;
+  padding: 6px 4px;
+  border: none;
+  border-radius: 9999px;
+  background-color: var(--dark-navy);
+  color: var(--white);
+  font-size: 24px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: outset 0 2px 4px rgba(0,0,0,0.2);
+  transition: background-color 0.2s, transform 0.2s;
 }
 
 /* ===== 오른쪽 메인 콘텐츠 ===== */
