@@ -1,0 +1,31 @@
+{
+  "name": "front-service",
+  "version": "1.0.0",
+  "description": "Front Service - React 기반 게시판 애플리케이션",
+  "private": true,
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "deploy:s3": "npm run build && aws s3 sync build/ s3://your-bucket-name --delete",
+    "deploy:amplify": "npm run build"
+  },
+  "dependencies": {
+    "amazon-cognito-identity-js": "^6.3.0",
+    "lucide-react": "^0.263.1",
+    "oidc-client-ts": "^3.3.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-icons": "^5.5.0",
+    "react-oidc-context": "^3.3.0",
+    "react-router-dom": "7.8.0",
+    "react-scripts": "5.0.1"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}

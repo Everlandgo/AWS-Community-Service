@@ -1,0 +1,19 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - echo "🚀 React 앱 빌드 시작..."
+        - npm ci
+    build:
+      commands:
+        - echo "📦 프로덕션 빌드 중..."
+        - npm run build
+        - echo "✅ 빌드 완료!"
+  artifacts:
+    baseDirectory: build
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*

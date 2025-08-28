@@ -1,0 +1,109 @@
+# E2E 스모크 테스트를 위한 완전한 개발 환경
+# MySQL + MinIO + Post Service + React Frontend
+
+version: '3.8'
+
+# 프로젝트 이름 설정
+name: post-project
+
+services:
+  # MySQL 데이터베이스
+  mysql:
+    image: mysql:8.0
+    container_name: post-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: postdb
+      MYSQL_USER: postuser
+      MYSQL_PASSWORD: postpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - post-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MinIO (S3 호환 객체 저장소)
+  minio:
+    image: minio/minio:latest
+    container_name: post-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - post-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Post 서비스 (Flask 애플리케이션)
+  post-service:
+    build: ./Post-master
+    container_name: post-service
+    ports:
+      - "8081:5000"
+    env_file:
+      - .env
+    environment:
+      - FLASK_APP=post
+      - FLASK_ENV=development
+      - DATABASE_URL=mysql+pymysql://postuser:postpass@mysql:3306/postdb
+      - AWS_DEFAULT_REGION=ap-northeast-2
+    volumes:
+      - ./Post-master:/app
+      - ./Post-master/uploads:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - post-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # React 프론트엔드
+  frontend:
+    build: ./Front
+    container_name: post-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8081/api/v1
+      - REACT_APP_MINIO_URL=http://localhost:9000
+    volumes:
+      - ./Front:/app
+      - /app/node_modules
+    depends_on:
+      post-service:
+        condition: service_healthy
+    networks:
+      - post-network
+    stdin_open: true
+    tty: true
+
+volumes:
+  mysql_data:
+  minio_data:
+
+networks:
+  post-network:
+    driver: bridge
