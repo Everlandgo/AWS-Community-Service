@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Heart, MessageCircle, Eye, User, Search } from 'lucide-react';
+import { ArrowLeft, Heart, User } from 'lucide-react';
 import CommonLayout from './CommonLayout';
 import CommentService from '../services/CommentService';
 import { getCognitoToken, decodeToken } from '../utils/tokenUtils';
@@ -63,11 +62,7 @@ class PostDetails extends Component {
 
   // 좋아요 토글
   handleLikeToggle = async () => {
-    console.log('=== 좋아요 토글 디버깅 ===');
-    console.log('isLoggedIn:', this.props.isLoggedIn);
-    console.log('currentUser:', this.props.currentUser);
-    console.log('currentUser.sub:', this.props.currentUser?.sub);
-    console.log('post:', this.state.post);
+    // debug logs removed
 
     if (!this.props.isLoggedIn) {
       alert('로그인이 필요합니다.');
@@ -86,7 +81,7 @@ class PostDetails extends Component {
         user_id: this.props.currentUser.sub
       };
       
-      console.log('요청 데이터:', requestBody);
+      // debug logs removed
       
       const response = await fetch(`http://localhost:8081/api/v1/posts/${this.state.post.id}/like`, {
         method: 'POST',
@@ -113,7 +108,7 @@ class PostDetails extends Component {
         });
       }
     } catch (error) {
-      console.error('좋아요 처리 오류:', error);
+      // notify user
       alert('좋아요 처리 중 오류가 발생했습니다.');
     }
   };
@@ -133,7 +128,7 @@ class PostDetails extends Component {
         isLoading: false 
       });
     } catch (error) {
-      console.error('게시글 상세 로드 오류:', error);
+      // simplify error log
       this.setState({ 
         error: error.message, 
         isLoading: false 
@@ -156,11 +151,11 @@ class PostDetails extends Component {
         // 댓글별 좋아요 상태 초기화
         this.initCommentLikeStatus(comments);
       } else {
-        console.warn('댓글 조회 실패:', result.message);
+        // keep UI stable on failure
         this.setState({ comments: [] });
       }
     } catch (error) {
-      console.error('댓글 로드 오류:', error);
+      // simplify error log
       // 에러 발생 시 빈 배열로 설정하여 UI가 깨지지 않도록 함
       this.setState({ comments: [] });
     }
@@ -228,12 +223,12 @@ class PostDetails extends Component {
         
         return true;
       } catch (decodeError) {
-        console.error('JWT 토큰 디코딩 오류:', decodeError);
+        // simplify error log
         this.handleTokenExpired();
         return false;
       }
     } catch (error) {
-      console.error('토큰 검증 오류:', error);
+      // simplify error log
       this.handleTokenExpired();
       return false;
     }
@@ -241,7 +236,7 @@ class PostDetails extends Component {
 
   // 토큰 만료 시 처리
   handleTokenExpired = () => {
-    console.log('토큰이 만료되었습니다. 로그아웃 처리 중...');
+    // silent logout cleanup
     
     // 로컬 스토리지 정리
     localStorage.removeItem('cognitoTokens');
@@ -285,12 +280,12 @@ class PostDetails extends Component {
         // 댓글 작성 성공 시 목록 다시 불러오기 및 입력창 초기화
         this.setState({ newComment: "" });
         this.fetchComments();
-        console.log('댓글 작성 성공:', result);
+        // refresh list
       } else {
         throw new Error(result.message || '댓글 작성에 실패했습니다.');
       }
     } catch (error) {
-      console.error('댓글 작성 오류:', error);
+      // notify user
       alert(error.message || '댓글 작성 중 오류가 발생했습니다.');
     }
   };
@@ -316,7 +311,7 @@ class PostDetails extends Component {
         throw new Error('댓글 좋아요 처리 실패');
       }
     } catch (e) {
-      console.error('댓글 좋아요 오류:', e);
+      // notify user
       alert('댓글 좋아요 처리 중 오류가 발생했습니다.');
     }
   };
@@ -356,7 +351,7 @@ class PostDetails extends Component {
         throw new Error('댓글 수정 실패');
       }
     } catch (e) {
-      console.error('댓글 수정 오류:', e);
+      // notify user
       alert('댓글 수정 중 오류가 발생했습니다.');
     }
   };
@@ -395,7 +390,7 @@ class PostDetails extends Component {
         throw new Error('댓글 삭제 실패');
       }
     } catch (e) {
-      console.error('댓글 삭제 오류:', e);
+      // notify user
       alert('댓글 삭제 중 오류가 발생했습니다.');
     }
   };

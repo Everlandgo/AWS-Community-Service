@@ -55,7 +55,6 @@ class App extends Component {
         
         // 토큰이 유효한지 확인 (간단한 검증)
         if (tokens.idToken || tokens.accessToken) {
-          console.log("저장된 로그인 상태 복원:", userData);
           this.setState({
             currentUser: userData,
             isLoggedIn: true
@@ -67,7 +66,7 @@ class App extends Component {
         }
       }
     } catch (error) {
-      console.error("로그인 상태 복원 실패:", error);
+      // simplify error log
       // 오류 발생 시 저장된 데이터 삭제
       localStorage.removeItem('currentUser');
       localStorage.removeItem('cognitoTokens');
@@ -75,8 +74,7 @@ class App extends Component {
   };
 
   handleLogin = (userData) => {
-    console.log("Cognito 로그인 완료:", userData);
-    console.log("토큰 확인:", userData.id_token);
+    // debug logs removed
     
     // 토큰이 있는지 확인
     if (!userData.id_token) {

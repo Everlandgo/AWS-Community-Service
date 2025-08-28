@@ -69,10 +69,10 @@ def get_cognito_public_keys():
     
     try:
         url = f"https://cognito-idp.{COGNITO_REGION}.amazonaws.com/{COGNITO_USER_POOL_ID}/.well-known/jwks.json"
-        logger.info(f"공개키 URL: {url}")
+        # 상세 디버깅 로그 제거
         
         response = requests.get(url, timeout=10)
-        logger.info(f"공개키 응답 상태: {response.status_code}")
+        
         
         response.raise_for_status()
         
@@ -80,10 +80,10 @@ def get_cognito_public_keys():
         _public_keys_cache = response.json()
         _public_keys_cache_time = current_time
         
-        logger.info(f"공개키 가져오기 성공: {len(_public_keys_cache['keys'])}개 키")
+        
         return _public_keys_cache
     except requests.RequestException as e:
-        logger.error(f"공개키 가져오기 실패 (네트워크 오류): {e}")
+        logger.error(f"공개키 가져오기 실패: {e}")
         # 캐시된 공개키가 있으면 사용
         if _public_keys_cache:
             logger.info("캐시된 공개키 사용")
@@ -97,9 +97,7 @@ def get_public_keys_from_issuer(issuer: str) -> dict:
     """주어진 issuer의 JWKS를 가져옵니다."""
     try:
         jwks_url = issuer.rstrip('/') + '/.well-known/jwks.json'
-        logger.info(f"토큰 issuer 기반 공개키 URL: {jwks_url}")
         response = requests.get(jwks_url, timeout=10)
-        logger.info(f"issuer 공개키 응답 상태: {response.status_code}")
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -112,9 +110,7 @@ def verify_cognito_token(token: str) -> dict:
     - idToken: aud 검증(클라이언트 ID), token_use == "id"
     - accessToken: aud 미검증, issuer 검증, token_use == "access" 및 client_id == 클라이언트 ID
     """
-    logger.info(f"=== JWT 토큰 검증 시작 ===")
-    logger.info(f"토큰 길이: {len(token)}")
-    logger.info(f"토큰 시작 부분: {token[:50]}...")
+    logger.info(f"JWT 토큰 검증 시작")
     
     # 토큰 형식 검증
     if not token or len(token.split('.')) != 3:
@@ -124,37 +120,37 @@ def verify_cognito_token(token: str) -> dict:
     try:
         # 토큰 헤더에서 kid 추출
         unverified_header = jwt.get_unverified_header(token)
-        logger.info(f"토큰 헤더: {unverified_header}")
+        
         
         kid = unverified_header.get('kid')
-        logger.info(f"추출된 kid: {kid}")
+        
         
         if not kid:
             logger.error("kid가 토큰 헤더에 없음")
             raise Exception("Invalid token header")
         
         # Cognito 공개키 가져오기
-        logger.info("Cognito 공개키 가져오기 시작")
+        
         public_keys = get_cognito_public_keys()
-        logger.info(f"공개키 개수: {len(public_keys['keys']) if public_keys and 'keys' in public_keys else 0}")
+        
         
         if not public_keys:
             logger.error("공개키를 가져올 수 없음")
             raise Exception("Failed to get public keys")
         
         # 해당 kid의 공개키 찾기
-        logger.info(f"kid '{kid}'에 해당하는 공개키 검색")
+        
         public_key = None
         selected_issuer = f"https://cognito-idp.{COGNITO_REGION}.amazonaws.com/{COGNITO_USER_POOL_ID}"
         for i, key in enumerate(public_keys['keys']):
-            logger.info(f"공개키 {i+1}: kid={key.get('kid')}")
+            
             if key['kid'] == kid:
-                logger.info(f"일치하는 공개키 발견: {key['kid']}")
+                
                 public_key = jwt.algorithms.RSAAlgorithm.from_jwk(key)
                 break
         
         if not public_key:
-            logger.warning(f"env 공개키에서 kid '{kid}' 미발견. 토큰 issuer 기반으로 재시도")
+            logger.warning(f"kid '{kid}' 공개키 미발견. 토큰 issuer 기반으로 재시도")
             try:
                 # 토큰의 iss를 확인하여 해당 JWKS로 재조회
                 temp_unverified_payload = jwt.decode(
@@ -162,14 +158,13 @@ def verify_cognito_token(token: str) -> dict:
                     options={"verify_signature": False}
                 )
                 issuer_from_token = temp_unverified_payload.get('iss')
-                logger.info(f"토큰 iss: {issuer_from_token}")
+                
                 if issuer_from_token:
                     public_keys_from_iss = get_public_keys_from_issuer(issuer_from_token)
                     if public_keys_from_iss and 'keys' in public_keys_from_iss:
                         for i, key in enumerate(public_keys_from_iss['keys']):
-                            logger.info(f"공개키(iss) {i+1}: kid={key.get('kid')}")
                             if key.get('kid') == kid:
-                                logger.info(f"일치하는 공개키 발견(iss): {key['kid']}")
+                                
                                 public_key = jwt.algorithms.RSAAlgorithm.from_jwk(key)
                                 selected_issuer = issuer_from_token
                                 break
@@ -192,14 +187,13 @@ def verify_cognito_token(token: str) -> dict:
         client_id_in_token = unverified_payload.get('client_id')
         issuer = selected_issuer
 
-        logger.info(f"토큰 사전 점검: token_use={token_use}, aud={aud}, client_id={client_id_in_token}, iss={unverified_payload.get('iss')}")
+        
 
         # 토큰 검증
-        logger.info("토큰 검증 시작")
-        logger.info(f"issuer: {issuer}")
+        
 
         if token_use == 'id':
-            logger.info(f"idToken 경로: audience={COGNITO_CLIENT_ID} 검증")
+            
             payload = jwt.decode(
                 token,
                 public_key,
@@ -210,7 +204,7 @@ def verify_cognito_token(token: str) -> dict:
             if payload.get('token_use') != 'id':
                 raise Exception("Invalid token_use for id token")
         elif token_use == 'access':
-            logger.info("accessToken 경로: audience 미검증, issuer 검증")
+            
             payload = jwt.decode(
                 token,
                 public_key,
@@ -227,8 +221,7 @@ def verify_cognito_token(token: str) -> dict:
             logger.error(f"알 수 없는 token_use: {token_use}")
             raise Exception("Unknown token_use")
 
-        logger.info(f"토큰 검증 성공: sub={payload.get('sub')}, exp={payload.get('exp')}, token_use={payload.get('token_use')}")
-        logger.info("=== JWT 토큰 검증 완료 ===")
+        logger.info("JWT 토큰 검증 완료")
         return payload
         
     except jwt.ExpiredSignatureError:
