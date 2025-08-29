@@ -158,7 +158,7 @@ const SignupPage = ({ onSignup, navigate }) => {
           <form className="auth-form" onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label">
-                아이디
+                ID
               </label>
               <input
                 type="text"
@@ -175,7 +175,7 @@ const SignupPage = ({ onSignup, navigate }) => {
 
             <div className="form-group">
               <label className="form-label">
-                이메일
+                Email
               </label>
               <input
                 type="email"
@@ -192,7 +192,7 @@ const SignupPage = ({ onSignup, navigate }) => {
 
             <div className="form-group">
               <label className="form-label">
-                비밀번호
+                PWD
               </label>
               <div className="password-input-container">
                 <input
@@ -217,7 +217,7 @@ const SignupPage = ({ onSignup, navigate }) => {
 
             <div className="form-group">
               <label className="form-label">
-                비밀번호 확인
+                Confirm<br/>PWD
               </label>
               <div className="password-input-container">
                 <input
