@@ -15,9 +15,10 @@ module "eks" {
 
   cluster_endpoint_public_access  = true
   cluster_endpoint_private_access = true
-  cluster_endpoint_public_access_cidrs = ["106.248.40.226"]
+  cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
 
   enable_irsa = true
+  enable_cluster_creator_admin_permissions = true
 
   # 노드 그룹 구성
   eks_managed_node_groups = {

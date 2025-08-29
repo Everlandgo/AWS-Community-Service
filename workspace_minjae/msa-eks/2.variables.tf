@@ -32,3 +32,9 @@ variable "domain" {
   type    = string
   default = "hhottdogg.shop"
 }
+
+variable "enable_apigw" {
+  type        = bool
+  description = "Enable API Gateway resources after Ingress NLB is ready"
+  default     = false
+}

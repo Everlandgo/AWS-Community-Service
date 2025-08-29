@@ -1,0 +1,1 @@
+{"Version":"2012-10-17","Statement":[{"Sid":"AllowDeployUserAssume","Effect":"Allow","Principal":{"AWS":"arn:aws:iam::245040175511:user/deploy-s3-frontend"},"Action":"sts:AssumeRole"}]}

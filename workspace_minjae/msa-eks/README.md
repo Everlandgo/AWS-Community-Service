@@ -175,6 +175,35 @@ kubectl get pods --all-namespaces
 - **외부 도메인**: `api.hhottdogg.shop`
 - **API Gateway**: `https://{api-id}.execute-api.ap-northeast-2.amazonaws.com/prod`
 
+## 📝 진행 이력 (운영 메모)
+
+- 2025-08-29
+  - EKS 애드온 데이터소스 복구: `aws_eks_cluster`, `aws_eks_cluster_auth` 주석 해제 및 `depends_on = [module.eks]` 추가
+  - EKS Endpoint CIDR 오류 수정: `cluster_endpoint_public_access_cidrs`를 `106.248.40.226/32`로 설정(임시로 0.0.0.0/0 오픈 후 재축소)
+  - 애드온 순서 보장: `time_sleep.cluster_ready`(120s) 및 `time_sleep.alb_ready`(60s) 추가로 웹훅 준비 대기
+  - ExternalDNS 정책 ARN 형식 수정: `arn:aws:route53:::hostedzone/...`
+  - Ingress-NGINX 배포 재시도: ALB 컨트롤러 준비 대기 후 성공적으로 배포 완료
+  - API Gateway 토글 추가: `var.enable_apigw` (기본 false) 도입, Ingress NLB 리스너 ARN 자동 조회로 연계
+  - Ingress Service에 NLB 태그 추가: `service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags = kubernetes.io/service-name=ingress-nginx/ingress-nginx-controller`
+  - API Gateway LB 탐색 안정화: `data "aws_lb"`에 `vpc_id`, `load_balancer_type = "network"` 추가 및 리스너 포트 80 사용
+
+### API Gateway 활성화 방법
+
+1) 변수 활성화
+```bash
+terraform apply -var=enable_apigw=true
+```
+
+2) 출력값 확인
+```bash
+terraform output httpapi_invoke_url
+terraform output api_id
+```
+
+3) 문제 시 확인 사항
+- Ingress NLB가 생성되었는지 및 태그 `kubernetes.io/service-name=ingress-nginx/ingress-nginx-controller`가 부여되었는지 확인
+- `aws_apigatewayv2_integration`가 참조하는 리스너 ARN이 존재하는지 확인(포트 80)
+
 ## 🚨 주의사항
 
 1. **권한 문제**: 배포 전에 AWS 사용자에게 필요한 권한이 부여되었는지 확인
