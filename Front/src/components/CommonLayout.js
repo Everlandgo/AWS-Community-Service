@@ -54,7 +54,11 @@ const CommonLayout = ({ children, isLoggedIn, currentUser, navigate, hideSidebar
               style={{ cursor: 'pointer', border: 'none' }}
               title="홈으로 이동"
             >
-              C
+              <img
+                src='/logo.png'
+                alt='Logo'
+                className='logo-image'
+              />
             </button>
           </div>
 

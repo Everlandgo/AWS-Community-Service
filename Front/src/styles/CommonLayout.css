@@ -67,23 +67,17 @@
 }
 
 .logo-placeholder {
-  width: 80px;
-  height: 80px;
+  width: fit-content;
+  height: fit-content;
   cursor: pointer;
-
-  /* 로고 이미지로 대체 시에 삭제할 코드 */
-  background-color: var(--dark-navy);
-  border-radius: var(--radius);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--white);
-  font-weight: bold;
-  font-size: 18px;
-  transition: all 0.2s ease;
-  border: none;
-  outline: none;
+  background-color: transparent;
 }
+
+.logo-image {
+  width: 60px;
+  height: auto;
+}
+
 
 /* 검색바 */
 .search-section {
