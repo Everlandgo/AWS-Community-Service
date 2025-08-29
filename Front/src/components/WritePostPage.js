@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { User, ArrowLeft, Save, X } from 'lucide-react';
 import CommonLayout from './CommonLayout';
+import "../styles/WritePostPage.css"
 
 class WritePostPage extends Component {
   constructor(props) {
@@ -205,26 +206,26 @@ class WritePostPage extends Component {
           )}
 
           <form className="write-post-form" onSubmit={this.handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="title" className="form-label">제목</label>
+            <div className="post-form-group">
+              <label htmlFor="title" className="post-form-label">제목</label>
               <input
                 type="text"
                 id="title"
-                className="form-input"
+                className="write-form-input"
                 value={title}
                 onChange={(e) => this.handleInputChange('title', e.target.value)}
                 placeholder="게시글 제목을 입력하세요"
                 maxLength={100}
                 required
               />
-              <span className="char-count">{title.length}/100</span>
+              <span className="post-char-count">{title.length}/100</span>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="category" className="form-label">카테고리</label>
+            <div className="post-form-group">
+              <label htmlFor="category" className="post-form-label">카테고리</label>
               <select
                 id="category"
-                className="form-select"
+                className="post-form-select"
                 value={category}
                 onChange={(e) => this.handleInputChange('category', e.target.value)}
                 required
@@ -237,11 +238,11 @@ class WritePostPage extends Component {
               </select>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="content" className="form-label">내용</label>
+            <div className="post-form-group">
+              <label htmlFor="content" className="post-form-label">내용</label>
               <textarea
                 id="content"
-                className="form-textarea"
+                className="post-form-textarea"
                 value={content}
                 onChange={(e) => this.handleInputChange('content', e.target.value)}
                 placeholder="게시글 내용을 입력하세요 (최소 5자)"
@@ -249,150 +250,10 @@ class WritePostPage extends Component {
                 minLength={5}
                 required
               />
-              <span className="char-count">{content.length}자</span>
+              <span className="post-char-count">{content.length}자</span>
             </div>
           </form>
         </div>
-
-        <style jsx>{`
-          .write-post-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-          }
-
-          .back-button-container {
-            margin-bottom: 20px;
-          }
-
-          .back-button {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 16px;
-            background: none;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            color: #64748b;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 14px;
-          }
-
-          .back-button:hover {
-            background: #f8fafc;
-            border-color: #cbd5e1;
-            color: #475569;
-          }
-
-          .write-post-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e2e8f0;
-          }
-
-          .write-post-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: #1e293b;
-            margin: 0;
-          }
-
-          .write-post-actions {
-            display: flex;
-            gap: 12px;
-          }
-
-          .cancel-btn, .save-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-          }
-
-          .cancel-btn {
-            background: #f1f5f9;
-            color: #64748b;
-            border: 1px solid #e2e8f0;
-          }
-
-          .cancel-btn:hover {
-            background: #e2e8f0;
-            border-color: #cbd5e1;
-          }
-
-          .save-btn {
-            background: var(--primary);
-            color: var(--primary-foreground);
-          }
-
-          .save-btn:hover {
-            opacity: 0.9;
-          }
-
-          .save-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-          }
-
-          .error-message {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-            padding: 12px 16px;
-            border-radius: 6px;
-            margin-bottom: 24px;
-          }
-
-          .form-group {
-            margin-bottom: 24px;
-          }
-
-          .form-label {
-            display: block;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 8px;
-            font-size: 14px;
-          }
-
-          .form-input, .form-select, .form-textarea {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.2s;
-          }
-
-          .form-input:focus, .form-select:focus, .form-textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-          }
-
-          .form-textarea {
-            resize: vertical;
-            min-height: 200px;
-          }
-
-          .char-count {
-            display: block;
-            text-align: right;
-            color: #6b7280;
-            font-size: 12px;
-            margin-top: 4px;
-          }
-        `}</style>
       </CommonLayout>
     );
   }
