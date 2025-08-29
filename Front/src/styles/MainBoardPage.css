@@ -110,7 +110,6 @@
   display: grid;
   grid-template-columns: 120px 3fr 120px 100px 80px 80px;
   gap: 0;
-  border: 2px solid var(--dark-navy);
   border-radius: var(--radius);
   background-color: var(--white-shine);
   overflow: hidden;
