@@ -1,9 +1,17 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
-import { User, ArrowLeft, Save, X } from 'lucide-react';
+import { ArrowLeft, Save, X } from 'lucide-react';
 import CommonLayout from './CommonLayout';
 
-class WritePostPage extends Component {
+// useParams를 클래스 컴포넌트에서 사용하기 위한 래퍼
+function withParams(Component) {
+  return function WrappedComponent(props) {
+    const { useParams } = require('react-router-dom');
+    const params = useParams();
+    return <Component {...props} params={params} />;
+  };
+}
+
+class EditPostPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -11,10 +19,58 @@ class WritePostPage extends Component {
       content: "",
       category: "전체",
       isLoading: false,
-      error: null
+      error: null,
+      isInitialized: false
     };
     this.categories = ["전체", "동물/반려동물", "여행", "건강/헬스", "연예인"];
   }
+
+  componentDidMount() {
+    this.fetchPostData();
+  }
+
+  // 기존 게시글 데이터 가져오기
+  fetchPostData = async () => {
+    try {
+      const postId = this.props.params.postId;
+      const response = await fetch(`http://localhost:8081/api/v1/posts/${postId}`);
+      
+      if (!response.ok) {
+        throw new Error('게시글을 가져오는데 실패했습니다.');
+      }
+      
+      const data = await response.json();
+      const post = data.data || data.post;
+      
+      // 본인 확인
+      if (!this.props.isLoggedIn || !this.props.currentUser) {
+        throw new Error('로그인이 필요합니다.');
+      }
+
+             const isOwner = (
+         (post.username === this.props.currentUser.username) || 
+         (post.username === this.props.currentUser.email)
+       );
+
+      if (!isOwner) {
+        throw new Error('본인이 작성한 게시글만 수정할 수 있습니다.');
+      }
+
+      // 기존 데이터로 폼 초기화
+      this.setState({
+        title: post.title || "",
+        content: post.content || "",
+        category: post.category || "전체",
+        isInitialized: true
+      });
+    } catch (error) {
+      console.error('게시글 데이터 로드 오류:', error);
+      this.setState({ 
+        error: error.message, 
+        isLoading: false 
+      });
+    }
+  };
 
   handleInputChange = (field, value) => {
     this.setState({ [field]: value });
@@ -42,44 +98,36 @@ class WritePostPage extends Component {
     this.setState({ isLoading: true, error: null });
     
     try {
-      // Cognito ID 토큰 가져오기
-      const token = this.props.currentUser?.id_token;
-      
-      console.log('현재 사용자 정보:', this.props.currentUser);
-      console.log('토큰 확인:', token);
-      
-      if (!token) {
-        throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
-      }
+      const postId = this.props.params.postId;
+      const requestBody = {
+        title: this.state.title.trim(),
+        content: this.state.content.trim(),
+        // 카테고리는 수정 불가능하므로 제거
+        username: this.props.currentUser.username || this.props.currentUser.email
+      };
 
-              const response = await fetch('http://localhost:8081/api/v1/posts', {
-        method: 'POST',
+      const response = await fetch(`http://localhost:8081/api/v1/posts/${postId}`, {
+        method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          title: this.state.title.trim(),
-          content: this.state.content.trim(),
-          username: this.props.currentUser?.profile?.name || this.props.currentUser?.profile?.username || "Anonymous",
-          category: this.state.category
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || '게시글 작성에 실패했습니다.');
+        throw new Error(errorData.message || '게시글 수정에 실패했습니다.');
       }
 
       const result = await response.json();
       if (result.success) {
-        alert("게시글이 성공적으로 작성되었습니다!");
-        this.props.navigate('/');
+        alert("게시글이 성공적으로 수정되었습니다!");
+        this.props.navigate(`/post/${postId}`);
       } else {
-        throw new Error(result.message || '게시글 작성에 실패했습니다.');
+        throw new Error(result.message || '게시글 수정에 실패했습니다.');
       }
     } catch (error) {
-      console.error('게시글 작성 오류:', error);
+      console.error('게시글 수정 오류:', error);
       this.setState({ error: error.message });
     } finally {
       this.setState({ isLoading: false });
@@ -88,21 +136,19 @@ class WritePostPage extends Component {
 
   handleCancel = () => {
     if (this.state.title.trim() || this.state.content.trim()) {
-      if (window.confirm('작성 중인 내용이 있습니다. 정말로 취소하시겠습니까?')) {
-        this.props.navigate('/');
+      if (window.confirm('수정 중인 내용이 있습니다. 정말로 취소하시겠습니까?')) {
+        const postId = this.props.params.postId;
+        this.props.navigate(`/post/${postId}`);
       }
     } else {
-      this.props.navigate('/');
+      const postId = this.props.params.postId;
+      this.props.navigate(`/post/${postId}`);
     }
   };
 
   render() {
-    const { isLoggedIn, currentUser, profileImage } = this.props;
-    const { title, content, category, isLoading, error } = this.state;
-
-    // 디버깅을 위한 로그
-    console.log('WritePostPage 렌더링:', { isLoggedIn, currentUser });
-    console.log('현재 사용자 토큰:', currentUser?.id_token);
+    const { isLoggedIn, currentUser } = this.props;
+    const { title, content, category, isLoading, error, isInitialized } = this.state;
 
     if (!isLoggedIn) {
       return (
@@ -128,7 +174,7 @@ class WritePostPage extends Component {
               marginBottom: '24px',
               lineHeight: '1.6'
             }}>
-              게시글을 작성하려면 먼저 로그인해주세요.
+              게시글을 수정하려면 먼저 로그인해주세요.
             </p>
             <button
               onClick={() => this.props.navigate('/login')}
@@ -156,13 +202,31 @@ class WritePostPage extends Component {
       );
     }
 
+    if (!isInitialized) {
+      return (
+        <CommonLayout
+          isLoggedIn={isLoggedIn}
+          currentUser={currentUser}
+          navigate={this.props.navigate}
+        >
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '60px 20px',
+            color: 'var(--muted-foreground)'
+          }}>
+            <div>로딩 중...</div>
+          </div>
+        </CommonLayout>
+      );
+    }
+
     return (
       <CommonLayout
         isLoggedIn={isLoggedIn}
         currentUser={currentUser}
         navigate={this.props.navigate}
       >
-        <div className="write-post-container">
+        <div className="edit-post-container">
           {/* 뒤로가기 버튼 */}
           <div className="back-button-container">
             <button
@@ -174,9 +238,9 @@ class WritePostPage extends Component {
             </button>
           </div>
 
-          <div className="write-post-header">
-            <h1 className="write-post-title">새 게시글 작성</h1>
-            <div className="write-post-actions">
+          <div className="edit-post-header">
+            <h1 className="edit-post-title">게시글 수정</h1>
+            <div className="edit-post-actions">
               <button
                 type="button"
                 className="cancel-btn"
@@ -193,7 +257,7 @@ class WritePostPage extends Component {
                 disabled={isLoading}
               >
                 <Save size={16} />
-                {isLoading ? '저장 중...' : '저장'}
+                {isLoading ? '수정 중...' : '수정 완료'}
               </button>
             </div>
           </div>
@@ -204,7 +268,7 @@ class WritePostPage extends Component {
             </div>
           )}
 
-          <form className="write-post-form" onSubmit={this.handleSubmit}>
+          <form className="edit-post-form" onSubmit={this.handleSubmit}>
             <div className="form-group">
               <label htmlFor="title" className="form-label">제목</label>
               <input
@@ -222,19 +286,10 @@ class WritePostPage extends Component {
 
             <div className="form-group">
               <label htmlFor="category" className="form-label">카테고리</label>
-              <select
-                id="category"
-                className="form-select"
-                value={category}
-                onChange={(e) => this.handleInputChange('category', e.target.value)}
-                required
-              >
-                {this.categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              <div className="category-display">
+                <span className="category-value">{category}</span>
+                <span className="category-note">(수정 불가)</span>
+              </div>
             </div>
 
             <div className="form-group">
@@ -255,7 +310,7 @@ class WritePostPage extends Component {
         </div>
 
         <style jsx>{`
-          .write-post-container {
+          .edit-post-container {
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
@@ -285,7 +340,7 @@ class WritePostPage extends Component {
             color: #475569;
           }
 
-          .write-post-header {
+          .edit-post-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -294,14 +349,14 @@ class WritePostPage extends Component {
             border-bottom: 1px solid #e2e8f0;
           }
 
-          .write-post-title {
+          .edit-post-title {
             font-size: 28px;
             font-weight: 700;
             color: #1e293b;
             margin: 0;
           }
 
-          .write-post-actions {
+          .edit-post-actions {
             display: flex;
             gap: 12px;
           }
@@ -392,10 +447,32 @@ class WritePostPage extends Component {
             font-size: 12px;
             margin-top: 4px;
           }
+
+          .category-display {
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background-color: #f9fafb;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+
+          .category-value {
+            font-size: 14px;
+            color: #374151;
+            font-weight: 500;
+          }
+
+          .category-note {
+            font-size: 12px;
+            color: #6b7280;
+            font-style: italic;
+          }
         `}</style>
       </CommonLayout>
     );
   }
 }
 
-export default WritePostPage;
+export default withParams(EditPostPage);

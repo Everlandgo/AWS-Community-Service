@@ -894,14 +894,14 @@ body {
   font-size: 14px;
 }
 
-.post-author, .post-category, .post-date {
+.post-username, .post-category, .post-date {
   display: flex;
   align-items: center;
   gap: 8px;
   color: var(--muted-foreground);
 }
 
-.post-author span, .post-category span, .post-date span {
+.post-username span, .post-category span, .post-date span {
   color: var(--foreground);
   font-weight: 500;
 }

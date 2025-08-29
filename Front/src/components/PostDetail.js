@@ -53,6 +53,23 @@ class PostDetail extends Component {
     }
   };
 
+  // 게시글 수정 - EditPostPage로 이동
+  handleEdit = () => {
+    if (!this.props.isLoggedIn || !this.props.currentUser) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+    
+    // 수정 페이지로 이동
+    this.props.navigate(`/edit/${this.state.post.id}`);
+  };
+
+  // 게시글 삭제
+  handleDelete = () => {
+    // 삭제 기능 (나중에 구현)
+    alert('삭제 기능은 추후 구현 예정입니다.');
+  };
+
   // 좋아요 토글
   handleLikeToggle = async () => {
     console.log('=== 좋아요 토글 디버깅 ===');
@@ -196,9 +213,29 @@ class PostDetail extends Component {
 
         {/* 게시글 상세 내용 */}
         <article className="post-detail-card">
-          {/* 맨 위: 카테고리 */}
+          {/* 맨 위: 카테고리와 수정/삭제 버튼 */}
           <div className="post-category-header">
             <span className="category-tag">{post.category || '미분류'}</span>
+            {/* 본인이 작성한 글인 경우에만 수정/삭제 버튼 표시 */}
+            {isLoggedIn && currentUser && (
+                      (post.username === currentUser.username) || 
+        (post.username === currentUser.email)
+            ) && (
+              <div className="post-actions-buttons">
+                <button 
+                  className="edit-button"
+                  onClick={() => this.handleEdit()}
+                >
+                  수정
+                </button>
+                <button 
+                  className="delete-button"
+                  onClick={() => this.handleDelete()}
+                >
+                  삭제
+                </button>
+              </div>
+            )}
           </div>
 
           {/* 제목과 작성시간 */}
@@ -217,9 +254,9 @@ class PostDetail extends Component {
 
           {/* 닉네임과 통계 정보 */}
           <div className="post-meta-section">
-            <div className="post-author">
-              {post.author || 'Anonymous'}
-            </div>
+                    <div className="post-username">
+          {post.username || 'Anonymous'}
+        </div>
             <div className="post-stats">
               <span className="stat-item">조회수 {post.view_count || 0}</span>
               <span className="stat-item">좋아요 {post.like_count || 0}</span>
@@ -255,9 +292,49 @@ class PostDetail extends Component {
           }
 
           .post-category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 16px;
             padding-bottom: 16px;
             border-bottom: 1px solid #dee2e6;
+          }
+
+          .post-actions-buttons {
+            display: flex;
+            gap: 8px;
+          }
+
+          .edit-button, .delete-button {
+            padding: 6px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+
+          .edit-button {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+          }
+
+          .edit-button:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+          }
+
+          .delete-button {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+          }
+
+          .delete-button:hover {
+            background: #dc2626;
+            border-color: #dc2626;
           }
 
           .category-tag {
@@ -303,7 +380,7 @@ class PostDetail extends Component {
             border-bottom: 1px solid #dee2e6;
           }
 
-          .post-author {
+          .post-username {
             color: #475569;
             font-weight: 500;
           }

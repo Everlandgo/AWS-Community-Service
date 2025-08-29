@@ -38,7 +38,7 @@ class MyPage extends Component {
       }
 
       // 백엔드에서 사용자가 작성한 글 가져오기
-              const response = await fetch(`http://localhost:8081/api/v1/posts?author_id=${currentUser.sub}`);
+      const response = await fetch(`http://localhost:8081/api/v1/posts?username=${currentUser.username || currentUser.email}`);
       if (response.ok) {
         const data = await response.json();
         const posts = data.posts || data.data || [];

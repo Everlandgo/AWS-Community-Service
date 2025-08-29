@@ -21,12 +21,12 @@ class PostValidator:
         elif len(title) > 200:
             errors.append("제목은 200자를 초과할 수 없습니다")
         
-        # 작성자 ID 검증
-        author_id = data.get('author_id')
-        if not author_id:
-            errors.append("작성자 ID는 필수입니다")
-        elif not PostValidator._is_valid_id(author_id):
-            errors.append("올바르지 않은 작성자 ID 형식입니다")
+        # 작성자명 검증
+        username = data.get('username')
+        if not username:
+            errors.append("작성자명은 필수입니다")
+        elif len(username) > 100:
+            errors.append("작성자명은 100자를 초과할 수 없습니다")
         
         # 내용 검증
         content_md = data.get('content_md', '').strip()
@@ -58,13 +58,13 @@ class PostValidator:
             elif len(title) > 200:
                 errors.append("제목은 200자를 초과할 수 없습니다")
         
-        # 작성자 ID 검증
-        if 'author_id' in data:
-            author_id = data['author_id']
-            if not author_id:
-                errors.append("작성자 ID는 비어있을 수 없습니다")
-            elif not PostValidator._is_valid_id(author_id):
-                errors.append("올바르지 않은 작성자 ID 형식입니다")
+        # 작성자명 검증
+        if 'username' in data:
+            username = data['username']
+            if not username:
+                errors.append("작성자명은 비어있을 수 없습니다")
+            elif len(username) > 100:
+                errors.append("작성자명은 100자를 초과할 수 없습니다")
         
         # 내용 검증
         if 'content_md' in data:

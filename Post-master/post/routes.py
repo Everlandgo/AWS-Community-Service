@@ -284,8 +284,7 @@ def list_posts():
             "content": p.content,  # content 필드 추가
             "content_md": p.content_md,
             "content_s3url": p.content_s3url,
-            "author": p.author,  # author 필드 추가
-            "author_id": p.author_id,
+            "username": p.username,  # username 필드 추가
             "category": p.category,  # 카테고리 이름 (문자열)
             "visibility": p.visibility,
             "status": p.status,
@@ -368,8 +367,7 @@ def get_post(post_id):
             "content": post.content,  # content 필드 추가
             "content_md": post.content_md,
             "content_s3url": post.content_s3url,
-            "author": post.author,  # author 필드 추가
-            "author_id": post.author_id,
+            "username": post.username,  # username 필드 추가
             "category": post.category,  # 카테고리 이름 (문자열)
             "visibility": post.visibility,
             "status": post.status,
@@ -407,13 +405,13 @@ def create_post():
                 return jsonify({'error': f'{field} 필드가 필요합니다.'}), 400
         
         # 사용자 정보 (임시로 요청에서 추출)
-        username = data.get('author', 'Anonymous')
+        username = data.get('username', 'Anonymous')
         
         # 게시글 생성
         new_post = Post(
             title=data['title'],
             content=data['content'],
-            author=username,
+            username=username,
             category=data['category']
         )
         
@@ -428,7 +426,7 @@ def create_post():
                 'id': new_post.id,
                 'title': new_post.title,
                 'content': new_post.content,
-                'author': new_post.author,
+                'username': new_post.username,
                 'category': new_post.category,
                 'created_at': new_post.created_at.isoformat() if new_post.created_at else None
             }
@@ -442,7 +440,7 @@ def create_post():
 @bp.route('/posts/<post_id>', methods=['PUT', 'PATCH'])
 def update_post(post_id):
     """
-    게시글 수정
+    게시글 수정 (본인만 가능)
     ---
     tags:
       - Posts
@@ -460,68 +458,224 @@ def update_post(post_id):
           properties:
             title:
               type: string
-            content_md:
+              description: 게시글 제목
+            content:
               type: string
-            content_s3url:
+              description: 게시글 내용
+            category:
               type: string
-            author_id:
-              type: string
-            visibility:
-              type: string
-              enum: [PUBLIC, PRIVATE, UNLISTED]
-            status:
-              type: string
-              enum: [PUBLISHED, DRAFT]
+              description: 카테고리
+                         username:
+               type: string
+               description: 작성자명 (본인 확인용)
     responses:
       200:
         description: 게시글 수정 성공
+        schema:
+          type: object
+          properties:
+            success:
+              type: boolean
+            message:
+              type: string
+            data:
+              type: object
+              properties:
+                id:
+                  type: string
+                title:
+                  type: string
+                content:
+                  type: string
+                category:
+                  type: string
+                updated_at:
+                  type: string
+      403:
+        description: 권한 없음 (본인이 아닌 경우)
       404:
         description: 게시글을 찾을 수 없음
     """
     try:
+        # 게시글 존재 확인
         post = Post.query.get(post_id)
         if not post:
             return api_error("게시글을 찾을 수 없습니다", 404)
+        
+        # 요청 데이터 파싱
         data = request.get_json(force=True, silent=False)
-
-        if request.method == 'PUT':
+        if not data:
+            return api_error("수정할 데이터가 없습니다", 400)
+        
+        # 작성자 확인 (username으로 본인 확인)
+        username = data.get('username')
+        
+        if not username:
+            return api_error("작성자 정보가 필요합니다", 400)
+        
+        # 본인 확인 로직 (username만 사용)
+        if post.username != username:
+            return api_error("본인이 작성한 게시글만 수정할 수 있습니다", 403)
+        
+        # 수정 전 원본 데이터 백업 (로깅용)
+        original_data = {
+            'title': post.title,
+            'content': post.content,
+            'category': post.category
+        }
+        
+        # 수정할 필드들 처리
+        updated_fields = []
+        
+        # 제목 수정
+        if 'title' in data:
             title = (data.get('title') or '').strip()
-            content_md = (data.get('content_md') or '').strip()
-            content_s3url = data.get('content_s3url', '').strip()
-            author_id = data.get('author_id')
-            visibility = data.get('visibility', 'PUBLIC')
-            status = data.get('status', 'DRAFT')
-            
-            if not title or not author_id:
-                return api_error("제목과 작성자 ID는 필수입니다", 400)
-                
-            post.title = title
-            post.content_md = content_md if content_md else None
-            post.content_s3url = content_s3url if content_s3url else None
-            post.author_id = author_id
-            post.visibility = visibility
-            post.status = status
-        else:
-            if 'title' in data:
-                post.title = (data['title'] or '').strip()
-            if 'content_md' in data:
-                post.content_md = (data['content_md'] or '').strip()
-            if 'content_s3url' in data:
-                post.content_s3url = (data['content_s3url'] or '').strip()
-            if 'author_id' in data:
-                post.author_id = data['author_id']
-            if 'visibility' in data:
-                post.visibility = data['visibility']
-            if 'status' in data:
-                post.status = data['status']
-
+            if not title:
+                return api_error("제목은 비어있을 수 없습니다", 400)
+            if title != post.title:
+                post.title = title
+                updated_fields.append('title')
+        
+        # 내용 수정
+        if 'content' in data:
+            content = (data.get('content') or '').strip()
+            if not content:
+                return api_error("내용은 비어있을 수 없습니다", 400)
+            if content != post.content:
+                post.content = content
+                updated_fields.append('content')
+        
+        # 카테고리 수정 (수정 불가능)
+        if 'category' in data:
+            # 카테고리는 수정할 수 없음
+            current_app.logger.info(f"카테고리 수정 시도 무시 - 원본: {post.category}, 요청: {data.get('category')}")
+            # updated_fields에 추가하지 않음
+        
+        # 수정된 내용이 없는 경우
+        if not updated_fields:
+            return api_response(message="수정할 내용이 없습니다", data={
+                "id": post.id,
+                "title": post.title,
+                "content": post.content,
+                "category": post.category,
+                "updated_at": post.updated_at.isoformat() if post.updated_at else None
+            })
+        
+        # 수정 시간 업데이트
+        post.updated_at = datetime.utcnow()
+        
+        # 데이터베이스에 저장
         db.session.commit()
-        return api_response(message="게시글이 성공적으로 수정되었습니다")
+        
+        # 로깅
+        current_app.logger.info(f"게시글 수정 완료 - ID: {post_id}, 수정된 필드: {updated_fields}")
+        current_app.logger.info(f"원본: {original_data}")
+        current_app.logger.info(f"수정: {{'title': '{post.title}', 'content': '{post.content[:50]}...', 'category': '{post.category}'}}")
+        
+        # 성공 응답 (수정된 게시글 정보 포함)
+        return api_response(
+            message="게시글이 성공적으로 수정되었습니다",
+            data={
+                "id": post.id,
+                "title": post.title,
+                "content": post.content,
+                "category": post.category,
+                "updated_at": post.updated_at.isoformat(),
+                "updated_fields": updated_fields
+            }
+        )
         
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error in update_post: {str(e)}")
         return api_error("게시글 수정 중 오류가 발생했습니다", 500)
+
+# ============================================================================
+# 개발용 테스트 API (운영 환경에서는 제거)
+# ============================================================================
+
+@bp.route('/test/update-post/<post_id>', methods=['POST'])
+def test_update_post(post_id):
+    """
+    게시글 수정 테스트용 API (개발 환경용)
+    실제 운영에서는 이 엔드포인트를 제거해야 합니다.
+    """
+    try:
+        # 게시글 존재 확인
+        post = Post.query.get(post_id)
+        if not post:
+            return jsonify({
+                'success': False,
+                'message': '게시글을 찾을 수 없습니다'
+            }), 404
+        
+        # 요청 데이터 파싱
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'success': False,
+                'message': '수정할 데이터가 없습니다'
+            }), 400
+        
+        # 테스트용으로 간단한 수정 (권한 검증 없음)
+        updated_fields = []
+        
+        if 'title' in data:
+            title = (data.get('title') or '').strip()
+            if title and title != post.title:
+                post.title = title
+                updated_fields.append('title')
+        
+        if 'content' in data:
+            content = (data.get('content') or '').strip()
+            if content and content != post.content:
+                post.content = content
+                updated_fields.append('content')
+        
+        if 'category' in data:
+            category = (data.get('category') or '').strip()
+            if category and category != post.category:
+                post.category = category
+                updated_fields.append('category')
+        
+        if not updated_fields:
+            return jsonify({
+                'success': True,
+                'message': '수정할 내용이 없습니다',
+                'data': {
+                    'id': post.id,
+                    'title': post.title,
+                    'content': post.content,
+                    'category': post.category
+                }
+            })
+        
+        # 수정 시간 업데이트
+        post.updated_at = datetime.utcnow()
+        
+        # 데이터베이스에 저장
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': '게시글이 성공적으로 수정되었습니다',
+            'data': {
+                'id': post.id,
+                'title': post.title,
+                'content': post.content,
+                'category': post.category,
+                'updated_at': post.updated_at.isoformat(),
+                'updated_fields': updated_fields
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Test update_post error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'게시글 수정 중 오류가 발생했습니다: {str(e)}'
+        }), 500
 
 @bp.route('/posts/<post_id>', methods=['DELETE'])
 def delete_post(post_id):

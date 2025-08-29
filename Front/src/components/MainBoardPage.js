@@ -102,7 +102,7 @@ class MainBoardPage extends Component {
       filtered = filtered.filter(post => 
         post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         post.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.author?.toLowerCase().includes(searchTerm.toLowerCase())
+        post.username?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -191,7 +191,7 @@ class MainBoardPage extends Component {
             <div className="header-row">
               <div className="header-cell category-cell">카테고리</div>
               <div className="header-cell title-cell">제목</div>
-              <div className="header-cell author-cell">글쓴이</div>
+              <div className="header-cell username-cell">글쓴이</div>
               <div className="header-cell date-cell">작성날짜</div>
               <div className="header-cell views-cell">조회수</div>
               <div className="header-cell likes-cell">좋아요</div>
@@ -211,7 +211,7 @@ class MainBoardPage extends Component {
                       {post.title}
                     </a>
                   </div>
-                  <div className="table-cell author-cell">{post.author}</div>
+                  <div className="table-cell username-cell">{post.username}</div>
                   <div className="table-cell date-cell">
                     {new Date(post.created_at).toLocaleDateString('ko-KR')}
                   </div>
@@ -267,7 +267,7 @@ class MainBoardPage extends Component {
           }
 
           .category-cell { text-align: center; }
-          .author-cell { text-align: center; }
+          .username-cell { text-align: center; }
           .date-cell { text-align: center; }
           .views-cell { text-align: center; }
           .likes-cell { text-align: center; }

@@ -60,12 +60,11 @@ class Category(db.Model):
     created_at = db.Column(db.DateTime(3), nullable=False, default=datetime.utcnow)
 
 class Post(db.Model):
-    """게시글 기본 정보 (userdb.users와 author_id로 연결)"""
+    """게시글 기본 정보 (username 필드로 작성자 관리)"""
     __tablename__ = 'posts'
     
     id = db.Column(db.String(32), primary_key=True, default=generate_id)
-    author = db.Column(db.String(100), nullable=False)  # 작성자 이름 (프론트엔드 호환용)
-    author_id = db.Column(db.String(32), nullable=True, index=True)  # userdb.users.id 참조 (선택사항)
+    username = db.Column(db.String(100), nullable=False)  # 작성자 이름 (프론트엔드 호환용)
     category = db.Column(db.String(50), nullable=False, default='일반')  # 카테고리 이름 (프론트엔드 호환용)
     category_id = db.Column(db.String(32), db.ForeignKey('categories.id'), nullable=True, index=True)  # 카테고리 ID (선택사항)
     title = db.Column(db.String(200), nullable=False)

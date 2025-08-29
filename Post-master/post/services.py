@@ -37,14 +37,14 @@ class PostService:
     """게시글 관련 비즈니스 로직"""
     
     @staticmethod
-    def create_post(title, content_md, content_s3url, author_id, category_id, visibility='PUBLIC', status='DRAFT'):
+    def create_post(title, content_md, content_s3url, username, category_id, visibility='PUBLIC', status='DRAFT'):
         """게시글 생성"""
         post = Post(
             id=str(uuid.uuid4()).replace('-', ''),
             title=title,
             content_md=content_md,
             content_s3url=content_s3url,
-            author_id=author_id,
+            username=username,
             category_id=category_id,
             visibility=visibility,
             status=status
