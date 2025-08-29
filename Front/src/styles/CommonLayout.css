@@ -43,7 +43,7 @@
 /* ===== 상단 헤더 (전체 너비) ===== */
 .main-header {
   width: 100vw;
-  height: 150px;
+  height: 120px;
   display: flex;
   position: absolute;
   top: 0;
@@ -78,24 +78,23 @@
   height: auto;
 }
 
-
 /* 검색바 */
 .search-section {
   width: 100%;
   max-width: 600px;
-  margin-left:128px;
+  margin-left: 128px;
 }
 
 .search-bar-container {
-    display: flex;
-    align-items: center;
-    flex-grow: 1;
-    width:80%;
-    border-radius: 999px;
-    background-color: var(--white);
-    padding: 12px 24px;
-    margin: 0px 12px;
-    box-shadow: outset 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  width:80%;
+  border-radius: 999px;
+  background-color: var(--white);
+  padding: 12px 24px;
+  margin: 0px 12px;
+  box-shadow: outset 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .search-input {
@@ -211,7 +210,7 @@
   margin: 0;
   width: 100%;
   padding: 24px;
-  margin-top: 150px;
+  margin-top: 120px;
 }
 
 /* ===== 왼쪽 사이드바 (카테고리) ===== */
@@ -231,6 +230,7 @@
 .sidebar-content {
   display: flex;
   flex-direction: column;
+  padding-right: 24px;
 }
 
 .sidebar-title {
@@ -241,8 +241,11 @@
 }
 
 .category-list {
+  display: flex;
+  flex-direction: column;
   list-style: none;
   padding: 0;
+  gap: 8px;
 }
 
 .category-list button {
@@ -268,24 +271,7 @@
   color: var(--color-text-default);
 }
 
-/* ==== 글쓰기 버튼 === */
-.action-section {
-  margin: 12px 0px;
-}
 
-.write-post-button {
-  width: 100px;
-  padding: 8px 12px;
-  align-content: center;
-  border: none;
-  border-radius: 999px;
-  background-color: var(--dark-navy);
-  color: var(--white-shine);
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  box-shadow: outset 0 2px 4px rgba(0,0,0,0.2);
-}
 
 /* ===== 오른쪽 메인 콘텐츠 ===== */
 .content-area {

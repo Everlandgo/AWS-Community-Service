@@ -2,6 +2,14 @@ import React, { Component } from 'react';
 import CommonLayout from './CommonLayout';
 import "../styles/MainBoardPage.css"
 
+const handleWritePostClick = () => {
+  if (onWritePost) {
+    onWritePost();
+  } else {
+    navigate('/write');
+  }
+};
+
 class MainBoardPage extends Component {
   constructor(props) {
     super(props);
@@ -11,11 +19,11 @@ class MainBoardPage extends Component {
       filteredPosts: [], // 필터링된 게시글
       isLoading: true,
       error: null,
-      activeCategory: "전체",
+      activeCategory: "ALL",
       searchTerm: "",
       sortBy: "최신순"
     };
-    this.categories = ["전체", "동물/반려동물", "여행", "건강/헬스", "연예인"];
+    this.categories = ["ALL", "자유", "동물/반려동물", "여행", "건강/헬스", "연예인"];
   }
 
   componentDidMount() {
@@ -73,7 +81,7 @@ class MainBoardPage extends Component {
   };
 
   filterPostsByCategory = (category) => {
-    if (category === "전체") {
+    if (category === "ALL") {
       // 전체 카테고리일 때는 모든 게시글 표시
       this.setState({ filteredPosts: this.state.allPosts });
     } else {
@@ -94,7 +102,7 @@ class MainBoardPage extends Component {
     let filtered = allPosts;
 
     // 카테고리 필터링
-    if (activeCategory !== "전체") {
+    if (activeCategory !== "ALL") {
       filtered = filtered.filter(post => post.category === activeCategory);
     }
 
@@ -156,19 +164,7 @@ class MainBoardPage extends Component {
         onLogout={this.props.onLogout}
       >
         {/* 필터 및 정렬 섹션 */}
-        <div className="filter-section">
-          {/* <div className="category-filters">
-            {this.categories.slice(1).map((category) => (
-              <button
-                key={category}
-                className={`category-filter-btn ${activeCategory === category ? 'active' : ''}`}
-                onClick={() => this.handleCategoryChange(category)}
-              >
-                {category}
-              </button>
-            ))}
-          </div> */}
-          
+        <div className="filter-section">          
           <div className="sort-buttons">
             <button
               className={`sort-btn ${sortBy === '최신순' ? 'active' : ''}`}
@@ -183,6 +179,13 @@ class MainBoardPage extends Component {
               인기순
             </button>
           </div>
+          {isLoggedIn && (
+            <div className="action-section">
+              <button className="write-post-button" onClick={handleWritePostClick}>
+                + 글쓰기
+              </button>
+            </div>
+          )}
         </div>
 
         {/* 게시글 테이블 */}
