@@ -131,6 +131,7 @@
 /* 헤더 오른쪽 액션 */
 .header-actions {
   display: flex;
+  flex-direction: row;
   width: fit-content;
   align-items: center;
   padding-left: 20px;
@@ -163,8 +164,15 @@
 }
 
 /* 사용자 프로필 */
+.user-profile-section {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
+
 .user-profile {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
@@ -186,8 +194,12 @@
 }
 
 .logout-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 40px;
   width: 40px;
+  border: none;
   border-radius: var(--radius);
   background-color: var(--dark-navy);
   color: var(--white-shine);

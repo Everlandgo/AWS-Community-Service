@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { User, Mail, Calendar, ArrowLeft, Edit, Trash2, Eye, Heart, MessageCircle } from 'lucide-react';
 import CommonLayout from './CommonLayout';
+import "../styles/MyPage.css"
 
 class MyPage extends Component {
   constructor(props) {
@@ -121,21 +122,23 @@ class MyPage extends Component {
         hideSidebar={true} // 마이페이지에서만 사이드바 숨기기
       >
         <div className="mypage-container">
-          {/* 제목 먼저 가운데에 */}
-          <div className="mypage-header">
-            <h1 className="mypage-title">마이페이지</h1>
-          </div>
-
           {/* 뒤로가기 버튼을 제목 아래에 */}
           <div className="back-button-container">
             <button 
               onClick={this.handleBack}
-              className="back-button"
+              className="mypage-back-button"
             >
               <ArrowLeft size={20} />
               뒤로가기
             </button>
           </div>
+
+          {/* 제목 먼저 가운데에 */}
+          <div className="mypage-header">
+            <h1 className="mypage-title">마이페이지</h1>
+          </div>
+
+          
 
           <div className="mypage-content">
             {/* 사용자 정보 섹션 */}
@@ -172,60 +175,57 @@ class MyPage extends Component {
               ) : userPosts.length === 0 ? (
                 <div className="no-posts">작성한 게시글이 없습니다.</div>
               ) : (
-                <div className="posts-table">
+                <div className="my-posts-table">
                   {/* 테이블 헤더 */}
-                  <div className="table-header">
-                    <div className="header-row">
-                      <div className="header-cell category-cell">카테고리</div>
-                      <div className="header-cell title-cell">제목</div>
-                      <div className="header-cell date-cell">작성날짜</div>
-                      <div className="header-cell views-cell">조회수</div>
-                      <div className="header-cell likes-cell">좋아요</div>
-                      <div className="header-cell comments-cell">댓글</div>
-                      <div className="header-cell actions-cell">작업</div>
-                    </div>
+                  <div className="my-table-header">
+                      <div className="my-header-cell">카테고리</div>
+                      <div className="my-header-cell">제목</div>
+                      <div className="my-header-cell">작성날짜</div>
+                      <div className="my-header-cell">조회수</div>
+                      <div className="my-header-cell">좋아요</div>
+                      <div className="my-header-cell">댓글</div>
+                      <div className="my-header-cell">작업</div>
                   </div>
 
                   {/* 테이블 본문 */}
-                  <div className="table-body">
+                  <div className="my-table-body">
                     {userPosts.map(post => (
-                      <div key={post.id} className="table-row">
-                        <div className="table-cell category-cell">
-                          <span className="category-tag">{post.category || '미분류'}</span>
+                      <div key={post.id} className="my-table-row">
+                        <div className="my-table-cell category-cell">
+                          <span className="my-category-tag">{post.category || '미분류'}</span>
                         </div>
-                        <div className="table-cell title-cell">
-                          <span className="post-title">{post.title}</span>
+                        <div className="my-table-cell title-cell">
+                          <span className="my-post-title">{post.title}</span>
                         </div>
-                        <div className="table-cell date-cell">
+                        <div className="my-table-cell date-cell">
                           {new Date(post.created_at).toLocaleDateString('ko-KR')}
                         </div>
-                        <div className="table-cell views-cell">
-                          <Eye size={16} />
+                        <div className="my-table-cell views-cell">
                           {post.view_count || 0}
                         </div>
-                        <div className="table-cell likes-cell">
-                          <Heart size={16} />
+                        <div className="my-table-cell likes-cell">
                           {post.like_count || 0}
                         </div>
-                        <div className="table-cell comments-cell">
-                          <MessageCircle size={16} />
+                        <div className="my-table-cell comments-cell">
                           {post.comment_count || 0}
                         </div>
-                        <div className="table-cell actions-cell">
-                          <button 
-                            className="action-btn edit"
-                            onClick={() => this.handleEditPost(post.id)}
-                            title="수정"
-                          >
-                            <Edit size={16} />
-                          </button>
-                          <button 
-                            className="action-btn delete"
-                            onClick={() => this.handleDeletePost(post.id)}
-                            title="삭제"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                        <div className="my-table-cell actions-cell">
+                          <div className="my-actions-cell">
+                            <button 
+                              className="action-btn edit"
+                              onClick={() => this.handleEditPost(post.id)}
+                              title="수정"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button 
+                              className="action-btn delete"
+                              onClick={() => this.handleDeletePost(post.id)}
+                              title="삭제"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -234,203 +234,6 @@ class MyPage extends Component {
               )}
             </div>
           </div>
-
-          <style jsx>{`
-            .mypage-container {
-              padding: 20px;
-              max-width: 1200px;
-              margin: 0 auto;
-            }
-
-            .back-button-container {
-              margin-bottom: 20px;
-            }
-
-            .back-button {
-              display: flex;
-              align-items: center;
-              gap: 8px;
-              padding: 10px 16px;
-              background: none;
-              border: 1px solid #e2e8f0;
-              border-radius: 6px;
-              color: #64748b;
-              cursor: pointer;
-              transition: all 0.2s;
-              font-size: 14px;
-            }
-
-            .back-button:hover {
-              background: #f8fafc;
-              border-color: #cbd5e1;
-              color: #475569;
-            }
-
-            .mypage-header {
-              text-align: center;
-              margin-bottom: 20px;
-            }
-
-            .mypage-title {
-              font-size: 28px;
-              font-weight: 700;
-              color: #1e293b;
-              margin: 0;
-            }
-
-            .user-info-section {
-              margin-bottom: 32px;
-            }
-
-            .user-profile-card {
-              background: #f8f9fa;
-              border-radius: 12px;
-              padding: 24px;
-              display: flex;
-              align-items: center;
-              gap: 20px;
-              border: 1px solid #e9ecef;
-            }
-
-            .profile-image {
-              width: 80px;
-              height: 80px;
-              border-radius: 50%;
-              overflow: hidden;
-            }
-
-            .profile-avatar {
-              width: 100%;
-              height: 100%;
-              background: var(--primary);
-              color: var(--primary-foreground);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-size: 32px;
-              font-weight: 700;
-            }
-
-            .profile-details h2 {
-              margin: 0 0 8px 0;
-              font-size: 24px;
-              font-weight: 600;
-              color: #1e293b;
-            }
-
-            .profile-email {
-              margin: 0;
-              color: #64748b;
-              font-size: 16px;
-            }
-
-            .section-title {
-              font-size: 20px;
-              font-weight: 600;
-              color: #1e293b;
-              margin: 0 0 20px 0;
-            }
-
-            .posts-table {
-              background: white;
-              border-radius: 8px;
-              border: 1px solid #e2e8f0;
-              overflow: hidden;
-            }
-
-            .table-header {
-              background: #f8fafc;
-              border-bottom: 1px solid #e2e8f0;
-            }
-
-            .header-row {
-              display: grid;
-              grid-template-columns: 120px 1fr 120px 80px 80px 80px 100px;
-              gap: 16px;
-              padding: 16px;
-              font-weight: 600;
-              color: #475569;
-              font-size: 14px;
-            }
-
-            .table-body {
-              background: white;
-            }
-
-            .table-row {
-              display: grid;
-              grid-template-columns: 120px 1fr 120px 80px 80px 80px 100px;
-              gap: 16px;
-              padding: 16px;
-              border-bottom: 1px solid #f1f5f9;
-              align-items: center;
-            }
-
-            .table-row:hover {
-              background: #f8fafc;
-            }
-
-            .table-cell {
-              display: flex;
-              align-items: center;
-              gap: 8px;
-            }
-
-            .category-tag {
-              background: var(--primary);
-              color: var(--primary-foreground);
-              padding: 4px 8px;
-              border-radius: 12px;
-              font-size: 12px;
-              font-weight: 500;
-            }
-
-            .post-title {
-              font-weight: 500;
-              color: #1e293b;
-            }
-
-            .action-btn {
-              padding: 6px;
-              border: none;
-              border-radius: 4px;
-              cursor: pointer;
-              transition: all 0.2s;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-            }
-
-            .action-btn.edit {
-              background: #dbeafe;
-              color: #1d4ed8;
-              margin-right: 8px;
-            }
-
-            .action-btn.edit:hover {
-              background: #bfdbfe;
-            }
-
-            .action-btn.delete {
-              background: #fee2e2;
-              color: #dc2626;
-            }
-
-            .action-btn.delete:hover {
-              background: #fecaca;
-            }
-
-            .loading, .error, .no-posts {
-              text-align: center;
-              padding: 60px 20px;
-              font-size: 16px;
-              color: #64748b;
-            }
-
-            .error {
-              color: #ef4444;
-            }
-          `}</style>
         </div>
       </CommonLayout>
     );

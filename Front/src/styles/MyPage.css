@@ -1,0 +1,271 @@
+
+:root {
+  --default-bg: #d6dee7;
+  --darker-bg: #c8cfd6;
+  --dark-navy: #3e4a5b;
+  --darker-navy: #353f4d;
+  --white-shine: #fff;
+  --white: #fafafa;
+  --white-shadow: #ececec;
+  --text-default: #1e293b;
+  --text-light: #2c384a;
+  --text-dark: #0e131b;
+  --placeholder-grey: #707274d8;
+  --placeholder-white: #eff2f5d8;
+  --title: #1e293b;
+  --subtitle: #485362;
+  --posttitle: #1d2025;
+  --primary: hsl(222.2 47.4% 11.2%);
+  --primary-foreground: hsl(210 40% 98%);
+  --secondary: hsl(210 40% 96%);
+  --secondary-foreground: hsl(222.2 84% 4.9%);
+  --muted: hsl(210 40% 96%);
+  --muted-foreground: hsl(215.4 16.3% 46.9%);
+  --accent: hsl(210 40% 96%);
+  --accent-foreground: hsl(222.2 84% 4.9%);
+  --destructive: hsl(0 84.2% 60.2%);
+  --destructive-foreground: hsl(210 40% 98%);
+  --border: hsl(214.3 31.8% 91.4%);
+  --input: hsl(214.3 31.8% 91.4%);
+  --ring: hsl(222.2 84% 4.9%);
+  --radius: 0.625rem;
+}
+
+/* ===== MyPage 스타일 ===== */
+.mypage-container {
+    display: flex;
+    flex-direction: column;
+    width: auto;
+    max-width: 1200px;
+    background-color: var(--dark-navy);
+    padding: 40px;
+    margin: 20px 40px;
+    border-radius: 20px;
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.1);
+
+}
+
+.mypage-back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: var(--white-shine);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0px 16px;
+  transition: all 0.2s ease;
+}
+
+.mypage-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.mypage-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.mypage-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 사용자 정보 섹션 */
+.user-info-section {
+  background-color: var(--white);
+  border-radius: var(--radius);
+  padding: 32px;
+  margin: 0 12px;
+  box-shadow: 1px 3px 4px rgb(0 0 0 / 0.1);
+}
+
+.user-profile-card {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.profile-image {
+  flex-shrink: 0;
+}
+
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: var(--black-navy);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-weight: bold;
+}
+
+.profile-details {
+  flex: 1;
+}
+
+.profile-name {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+}
+
+.profile-email {
+  font-size: 16px;
+  color: var(--subtitle);
+}
+
+/* 사용자가 작성한 글 섹션 */
+.user-posts-section {
+    align-content: center;
+    justify-content: center;
+    background-color: var(--white-shadow);
+    border-radius: var(--radius);
+    padding: 32px;
+    margin: 0 12px;
+    box-shadow: 2px 2px 4px rgb(0 0 0 / 0.1);
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--title);
+    padding: 12px;
+    margin-bottom: 4px;
+}
+
+/* 게시글 테이블 (Grid 기반) */
+.my-posts-table {
+  width: 100%;
+  background-color: var(--white);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+
+.my-table-header {
+  display: grid;
+  grid-template-columns: 100px 1fr 120px 60px 60px 60px 100px;
+  align-items: center;
+  gap: 0;
+  padding: 4px 0;
+  margin-bottom: 8px;
+}
+
+.my-header-cell {
+  font-weight: 600;
+  color: var(--subtitle);
+}
+
+/* 테이블 셀 공통 스타일 */
+.my-header-cell,
+.my-table-cell {
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  align-self: center;
+}
+
+/* 테이블 본문 */
+.my-table-body {
+  display: grid;
+  grid-template-columns: 100px 1fr 120px 60px 60px 60px 100px;
+  padding: 4px 0;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  gap: 0;
+  overflow: hidden;
+}
+
+.my-table-row {
+    display: contents;
+    align-self: center;
+    justify-items: center;
+    overflow: hidden;
+}
+
+.my-table-cell {
+  padding: 16px 16px;
+  display: flex; /* Use flexbox to center content vertically */
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+}
+
+/* Apply a hover effect to the entire row */
+.my-table-row:hover .my-table-cell {
+  background-color: var(--white-shadow);
+}
+
+/* 카테고리 태그 */
+.my-category-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--white-shine);
+  background-color: var(--dark-navy);
+}
+
+/* 제목 스타일 */
+.my-post-title {
+  color: var(--title);
+  font-weight: 500;
+  overflow: hidden;
+}
+
+.my-post-title:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.comments-cell {
+  color: var(--text-light);
+  justify-content: center;
+}
+
+/* 작업 버튼 컨테이너 */
+.my-actions-cell {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* 액션 버튼 스타일 */
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn.edit {
+  color: var(--black-navy);
+}
+
+.action-btn.delete {
+  color:var(--darker-navy);
+}
+
+.no-posts {
+  text-align: center;
+  padding: 40px;
+  color: var(--black-navy);
+  font-size: 16px;
+}
