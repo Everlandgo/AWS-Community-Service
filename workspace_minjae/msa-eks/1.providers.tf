@@ -8,4 +8,10 @@ terraform {
 }
 provider "aws" {
   region  = "ap-northeast-2"
+  profile = "deploy-s3-frontend"
+
+  assume_role {
+    role_arn     = "arn:aws:iam::2450-4017-5511:role/TerraformDeployerRole"
+    session_name = "tf-apply"
+  }
 }

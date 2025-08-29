@@ -1,14 +1,6 @@
-# VPC Link (NLB와 같은 VPC/프라이빗 서브넷)
-resource "aws_apigatewayv2_vpc_link" "vpclink" {
-  name               = "${var.project}-vpclink"
-  subnet_ids         = module.vpc.private_subnets
-  security_group_ids = [aws_security_group.apigw_sg.id]
-  
-  tags = {
-    Project = var.project
-    Env     = var.env
-  }
-}
+# =============================================================================
+# 5단계: API Gateway
+# =============================================================================
 
 # API Gateway 보안 그룹
 resource "aws_security_group" "apigw_sg" {
@@ -43,6 +35,18 @@ resource "aws_security_group" "apigw_sg" {
   }
 }
 
+# VPC Link (NLB와 같은 VPC/프라이빗 서브넷)
+resource "aws_apigatewayv2_vpc_link" "vpclink" {
+  name               = "${var.project}-vpclink"
+  subnet_ids         = module.vpc.private_subnets
+  security_group_ids = [aws_security_group.apigw_sg.id]
+  
+  tags = {
+    Project = var.project
+    Env     = var.env
+  }
+}
+
 # HTTP API
 resource "aws_apigatewayv2_api" "httpapi" {
   name          = "${var.project}-httpapi"
@@ -55,7 +59,6 @@ resource "aws_apigatewayv2_api" "httpapi" {
 }
 
 # Ingress NLB의 DNS를 찾아 입력(고정화가 필요하면 data source/locals 구성)
-# 여기서는 수동 변수로 노출
 variable "ingress_nlb_dns" {
   type        = string
   default     = "<NLB_DNS_NAME>"
@@ -93,6 +96,7 @@ resource "aws_apigatewayv2_stage" "prod" {
   }
 }
 
+# 출력값
 output "httpapi_invoke_url" {
   value = "${aws_apigatewayv2_api.httpapi.api_endpoint}/prod"
   description = "API Gateway HTTP API invoke URL"

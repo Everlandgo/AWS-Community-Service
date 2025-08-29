@@ -1,3 +1,33 @@
+# =============================================================================
+# 4단계: Kubernetes 프로바이더 및 애드온
+# =============================================================================
+
+# EKS 클러스터 데이터 소스 (클러스터 생성 후 사용)
+data "aws_eks_cluster" "this" { 
+  name = module.eks.cluster_name 
+}
+
+data "aws_eks_cluster_auth" "this" { 
+  name = module.eks.cluster_name 
+}
+
+# Kubernetes 프로바이더 설정
+provider "kubernetes" {
+  host                   = data.aws_eks_cluster.this.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.this.certificate_authority[0].data)
+  token                  = data.aws_eks_cluster_auth.this.token
+}
+
+# Helm 프로바이더 설정
+provider "helm" {
+  kubernetes {
+    host                   = data.aws_eks_cluster.this.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.this.certificate_authority[0].data)
+    token                  = data.aws_eks_cluster_auth.this.token
+  }
+}
+
+# IRSA (IAM Roles for Service Accounts) 모듈들
 module "iam_irsa_alb" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version = "~> 5.34"
@@ -38,6 +68,7 @@ module "iam_irsa_extdns" {
   }
 }
 
+# AWS Load Balancer Controller
 resource "helm_release" "alb" {
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
@@ -55,6 +86,7 @@ resource "helm_release" "alb" {
   })]
 }
 
+# AWS EBS CSI Driver
 resource "helm_release" "ebs" {
   name       = "aws-ebs-csi-driver"
   repository = "https://kubernetes-sigs.github.io/aws-ebs-csi-driver"
@@ -72,6 +104,7 @@ resource "helm_release" "ebs" {
   })]
 }
 
+# External DNS
 resource "helm_release" "extdns" {
   name       = "external-dns"
   repository = "https://kubernetes-sigs.github.io/external-dns/"
@@ -90,6 +123,7 @@ resource "helm_release" "extdns" {
   })]
 }
 
+# Ingress Nginx
 resource "helm_release" "ingress" {
   name             = "ingress-nginx"
   repository       = "https://kubernetes.github.io/ingress-nginx"
@@ -109,6 +143,7 @@ resource "helm_release" "ingress" {
   })]
 }
 
+# Metrics Server
 resource "helm_release" "metrics" {
   name       = "metrics-server"
   repository = "https://kubernetes-sigs.github.io/metrics-server/"
@@ -118,16 +153,13 @@ resource "helm_release" "metrics" {
   values     = [yamlencode({ args = ["--kubelet-insecure-tls"] })]
 }
 
-# -----------------------------------------------------------------------------
-# Cluster Autoscaler 설치 (노드 자동 확장)
-# - eks_managed_node_groups 와 함께 사용 시 autoDiscovery.clusterName 사용
-# - IRSA 별도 구성 시 서비스어카운트에 주석 추가 가능(예: eks.amazonaws.com/role-arn)
+# Cluster Autoscaler
 resource "helm_release" "cluster_autoscaler" {
   name       = "cluster-autoscaler"
   repository = "https://kubernetes.github.io/autoscaler"
   chart      = "cluster-autoscaler"
   namespace  = "kube-system"
-  version    = "9.42.0" # Kubernetes 1.30 호환 차트 버전 확인 권장
+  version    = "9.42.0"
 
   values = [yamlencode({
     autoDiscovery = {
@@ -138,7 +170,6 @@ resource "helm_release" "cluster_autoscaler" {
       serviceAccount = {
         create = true
         name   = "cluster-autoscaler"
-        # annotations = { "eks.amazonaws.com/role-arn" = module.iam_irsa_autoscaler.iam_role_arn } # IRSA 사용 시
       }
     }
     extraArgs = {
@@ -150,9 +181,7 @@ resource "helm_release" "cluster_autoscaler" {
   })]
 }
 
-# -----------------------------------------------------------------------------
-# AWS Node Termination Handler 설치 (스팟 중단/재조정 이벤트 시 안전 종료)
-# - IMDS 감지 모드 사용, 스팟/스케줄드 유지보수/재조정 이벤트를 처리
+# AWS Node Termination Handler
 resource "helm_release" "node_termination_handler" {
   name       = "aws-node-termination-handler"
   repository = "https://aws.github.io/eks-charts"
@@ -161,13 +190,13 @@ resource "helm_release" "node_termination_handler" {
   version    = "0.21.0"
 
   values = [yamlencode({
-    enableSqsTerminationDraining = false   # SQS 사용 안함(간단 구성)
-    enableSpotInterruptionDraining = true  # 스팟 중단 시 드레이닝
-    enableRebalanceDraining = true         # 재조정 이벤트 처리
-    nodeSelector = {                       # 데몬셋이 특정 아키텍처에 배포되도록 설정 예시
+    enableSqsTerminationDraining = false
+    enableSpotInterruptionDraining = true
+    enableRebalanceDraining = true
+    nodeSelector = {
       "kubernetes.io/arch" = "arm64"
     }
-    tolerations = [                        # 스팟/전용 테인트가 있어도 스케줄 가능
+    tolerations = [
       {
         key = "spotOnly"
         operator = "Exists"
