@@ -19,10 +19,10 @@ bp = Blueprint('api', __name__)
 # 로깅 설정
 logger = logging.getLogger(__name__)
 
-# AWS Cognito 설정 (빈 문자열일 경우도 기본값으로 폴백)
-COGNITO_USER_POOL_ID = os.getenv("COGNITO_USER_POOL_ID") or "ap-northeast-2_nneGIIVuJ"
-COGNITO_REGION = os.getenv("COGNITO_REGION") or "ap-northeast-2"
-COGNITO_CLIENT_ID = os.getenv("COGNITO_CLIENT_ID") or "2v16jp80jce0c40neuuhtlgg8t"
+# AWS Cognito 설정 (환경변수에서 읽기)
+COGNITO_USER_POOL_ID = os.environ.get("COGNITO_USER_POOL_ID")
+COGNITO_REGION = os.environ.get("COGNITO_REGION")
+COGNITO_CLIENT_ID = os.environ.get("COGNITO_CLIENT_ID")
 
 # 공개키 캐싱을 위한 전역 변수
 _public_keys_cache = None

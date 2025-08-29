@@ -8,9 +8,11 @@ import {
 import MainBoardPage from './components/MainBoardPage';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
+import ForgotPasswordPage from './components/ForgotPasswordPage';
 import MyPage from './components/MyPage';
-import PostDetails from './components/PostDetails';
+import PostDetail from './components/PostDetails';
 import WritePostPage from './components/WritePostPage';
+import { useAuth } from "react-oidc-context";
 
 // useNavigate를 클래스 컴포넌트에서 사용하기 위한 래퍼
 function withNavigate(Component) {
@@ -23,8 +25,9 @@ function withNavigate(Component) {
 const MainBoardPageWithNavigate = withNavigate(MainBoardPage);
 const LoginPageWithNavigate = withNavigate(LoginPage);
 const SignupPageWithNavigate = withNavigate(SignupPage);
+const ForgotPasswordPageWithNavigate = withNavigate(ForgotPasswordPage);
 const MyPageWithNavigate = withNavigate(MyPage);
-const PostDetailsWithNavigate = withNavigate(PostDetails);
+const PostDetailWithNavigate = withNavigate(PostDetail);
 const WritePostPageWithNavigate = withNavigate(WritePostPage);
 
 // AWS Cognito 인증 상태를 관리하는 App 컴포넌트
@@ -55,6 +58,7 @@ class App extends Component {
         
         // 토큰이 유효한지 확인 (간단한 검증)
         if (tokens.idToken || tokens.accessToken) {
+          console.log("저장된 로그인 상태 복원:", userData);
           this.setState({
             currentUser: userData,
             isLoggedIn: true
@@ -66,7 +70,7 @@ class App extends Component {
         }
       }
     } catch (error) {
-      // simplify error log
+      console.error("로그인 상태 복원 실패:", error);
       // 오류 발생 시 저장된 데이터 삭제
       localStorage.removeItem('currentUser');
       localStorage.removeItem('cognitoTokens');
@@ -74,7 +78,8 @@ class App extends Component {
   };
 
   handleLogin = (userData) => {
-    // debug logs removed
+    console.log("Cognito 로그인 완료:", userData);
+    console.log("토큰 확인:", userData.id_token);
     
     // 토큰이 있는지 확인
     if (!userData.id_token) {
@@ -171,7 +176,7 @@ class App extends Component {
           <Route
             path="/post/:postId"
             element={
-              <PostDetailsWithNavigate
+              <PostDetailWithNavigate
                 currentUser={currentUser}
                 isLoggedIn={isLoggedIn}
                 onLogout={this.handleLogout}
@@ -202,6 +207,12 @@ class App extends Component {
               <SignupPageWithNavigate 
                 onSignup={this.handleSignup}
               />
+            } 
+          />
+          <Route 
+            path="/forgot-password" 
+            element={
+              <ForgotPasswordPageWithNavigate />
             } 
           />
           <Route 
