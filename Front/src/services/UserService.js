@@ -51,7 +51,7 @@ class UserService {
       
       // 백엔드 토큰 저장
       if (data.accessToken) {
-        localStorage.setItem('backendAccessToken', data.accessToken);
+        sessionStorage.setItem('backendAccessToken', data.accessToken);
       }
 
       return data;
@@ -70,7 +70,7 @@ class UserService {
       });
 
       if (response.ok) {
-        localStorage.removeItem('backendAccessToken');
+        sessionStorage.removeItem('backendAccessToken');
       }
 
       return response.ok;
@@ -148,7 +148,7 @@ class UserService {
       });
 
       if (response.ok) {
-        localStorage.removeItem('backendAccessToken');
+        sessionStorage.removeItem('backendAccessToken');
       }
 
       return response.ok;

@@ -40,8 +40,16 @@ export function signIn(username, password) {
         const idToken = session.getIdToken().getJwtToken();
         const accessToken = session.getAccessToken().getJwtToken();
         const refreshToken = session.getRefreshToken().getToken();
-        localStorage.setItem('cognitoTokens', JSON.stringify({ idToken, accessToken, refreshToken }));
-        resolve({ idToken, accessToken, refreshToken });
+        
+        // 통일된 키로 저장
+        const tokens = {
+          id_token: idToken,
+          access_token: accessToken,
+          refresh_token: refreshToken
+        };
+        
+        sessionStorage.setItem('cognitoTokens', JSON.stringify(tokens));
+        resolve({ id_token: idToken, access_token: accessToken, refresh_token: refreshToken });
       },
       onFailure: (err) => reject(err),
     });

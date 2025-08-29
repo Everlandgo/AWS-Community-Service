@@ -1,12 +1,12 @@
 class AuthService {
   // Cognito JWT 토큰 유효성 검사
   isTokenValid() {
-    const savedTokens = localStorage.getItem('cognitoTokens');
+    const savedTokens = sessionStorage.getItem('cognitoTokens');
     if (!savedTokens) return false;
     
     try {
       const tokens = JSON.parse(savedTokens);
-      const accessToken = tokens.accessToken || tokens.idToken;
+      const accessToken = tokens.access_token || tokens.id_token;
       
       if (!accessToken) return false;
       
@@ -25,7 +25,7 @@ class AuthService {
 
   // 현재 저장된 Cognito 토큰 가져오기
   getStoredTokens() {
-    const savedTokens = localStorage.getItem('cognitoTokens');
+    const savedTokens = sessionStorage.getItem('cognitoTokens');
     if (!savedTokens) return null;
     
     try {
@@ -38,8 +38,8 @@ class AuthService {
 
   // 토큰 만료 시 정리
   clearExpiredTokens() {
-    localStorage.removeItem('cognitoTokens');
-    localStorage.removeItem('currentUser');
+    sessionStorage.removeItem('cognitoTokens');
+    sessionStorage.removeItem('currentUser');
   }
 }
 

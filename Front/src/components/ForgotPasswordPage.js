@@ -6,25 +6,25 @@ import { userPool } from '../aws-config';
 
 class ForgotPasswordPage extends Component {
   constructor(props) {
-    super(props);
-    this.state = {
-      // 1단계 입력(이메일)
-      email: '',
-
-      // 2단계 입력
-      confirmationCode: '',
-      newPassword: '',
-      confirmPassword: '',
-      showNewPassword: false,
-      showConfirmPassword: false,
-
-      // 내부 상태
-      usernameForCognito: '',           // ← email을 username으로 변환해 저장
-      currentStep: 1,                   // 1: 코드요청, 2: 비번변경
-      isLoading: false,
-      error: null,
-      success: null,
-    };
+          super(props);
+      this.state = {
+        // 1단계 입력(이메일)
+        email: '',
+ 
+        // 2단계 입력
+        confirmationCode: '',
+        newPassword: '',
+        confirmPassword: '',        
+        showNewPassword: false,
+        showConfirmPassword: false,
+ 
+        // 내부 상태
+        usernameForCognito: '',           // ← email을 username으로 변환해 저장
+        currentStep: 1,                   // 1: 코드요청, 2: 비번변경
+        isLoading: false,
+        error: null,
+        success: null,
+      };
   }
 
   // ===== 유틸 =====
@@ -72,6 +72,13 @@ class ForgotPasswordPage extends Component {
     if (!email) return this.setState({ error: '이메일을 입력해주세요.' });
     if (!this.validateEmail(email)) return this.setState({ error: '유효한 이메일 형식을 입력해주세요.' });
 
+    // 디버깅을 위한 로깅 추가
+    console.log('비밀번호 재설정 요청 시작:', {
+      email,
+      userPool: userPool.getUserPoolId(),
+      clientId: userPool.getClientId()
+    });
+
     this.setState({ isLoading: true, error: null, success: null });
 
     try {
@@ -91,13 +98,23 @@ class ForgotPasswordPage extends Component {
         },
         onFailure: (err) => {
           console.error('forgotPassword error', err);
-          // Prevent user existence errors가 켜져 있으면 200처럼 보일 수 있음 → 메시지 매핑
+          
+          // 더 자세한 에러 로깅 추가
+          console.log('Error details:', {
+            code: err?.code,
+            name: err?.name,
+            message: err?.message,
+            stack: err?.stack
+          });
+          
           const map = {
             UserNotFoundException: '해당 이메일의 사용자를 찾을 수 없습니다.',
-            CodeDeliveryFailureException: '이메일 발송에 실패했습니다. 콘솔의 Email 설정을 확인하세요.',
+            CodeDeliveryFailureException: '이메일 발송에 실패했습니다. Cognito 설정을 확인하세요.',
             LimitExceededException: '요청 한도를 초과했습니다. 잠시 후 다시 시도하세요.',
             InvalidParameterException: '연락처(이메일)가 등록/검증되어 있지 않습니다.',
+            NotAuthorizedException: '계정이 확인되지 않았습니다. 이메일 인증 후 다시 시도하세요.',
           };
+          
           const msg = map[err?.code] || err?.message || '코드 발송에 실패했습니다.';
           this.setState({ isLoading: false, error: msg });
         },
@@ -143,10 +160,23 @@ class ForgotPasswordPage extends Component {
       },
       onFailure: (err) => {
         console.error('confirmPassword error', err);
-        const msg =
-          err?.code === 'ExpiredCodeException'
-            ? '인증 코드가 만료되었습니다. 코드를 다시 요청하세요.'
-            : err?.message || '비밀번호 변경에 실패했습니다.';
+        
+        // 더 자세한 에러 로깅 추가
+        console.log('confirmPassword error details:', {
+          code: err?.code,
+          name: err?.name,
+          message: err?.message,
+          stack: err?.stack
+        });
+        
+        const map = {
+          ExpiredCodeException: '인증 코드가 만료되었습니다. 코드를 다시 요청하세요.',
+          CodeMismatchException: '인증 코드가 일치하지 않습니다. 다시 확인해주세요.',
+          InvalidPasswordException: '비밀번호가 Cognito 정책에 맞지 않습니다. 조건을 확인해주세요.',
+          LimitExceededException: '요청 한도를 초과했습니다. 잠시 후 다시 시도하세요.',
+        };
+        
+        const msg = map[err?.code] || err?.message || '비밀번호 변경에 실패했습니다.';
         this.setState({ isLoading: false, error: msg });
       },
     });

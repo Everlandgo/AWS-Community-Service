@@ -13,6 +13,7 @@ import MyPage from './components/MyPage';
 import PostDetail from './components/PostDetails';
 import WritePostPage from './components/WritePostPage';
 import { useAuth } from "react-oidc-context";
+import { setupTabCloseListener } from './utils/tokenUtils';
 
 // useNavigate를 클래스 컴포넌트에서 사용하기 위한 래퍼
 function withNavigate(Component) {
@@ -39,47 +40,81 @@ class App extends Component {
       currentUser: null,
       isLoggedIn: false
     };
+    this.cleanupTabListener = null;
   }
 
   componentDidMount() {
     // 페이지 로드 시 저장된 로그인 상태 복원
     this.restoreLoginState();
+    
+    // 탭 종료 시 자동 로그아웃을 위한 리스너 설정
+    this.cleanupTabListener = setupTabCloseListener();
+  }
+
+  componentWillUnmount() {
+    // 컴포넌트 언마운트 시 이벤트 리스너 정리
+    if (this.cleanupTabListener) {
+      this.cleanupTabListener();
+    }
   }
 
   // 저장된 로그인 상태 복원
   restoreLoginState = () => {
     try {
-      const savedUser = localStorage.getItem('currentUser');
-      const savedTokens = localStorage.getItem('cognitoTokens');
+      const savedUser = sessionStorage.getItem('currentUser');
+      const savedTokens = sessionStorage.getItem('cognitoTokens');
+      
+      console.log('🔍 로그인 상태 복원 시도:', { 
+        hasSavedUser: !!savedUser, 
+        hasSavedTokens: !!savedTokens 
+      });
       
       if (savedUser && savedTokens) {
         const userData = JSON.parse(savedUser);
         const tokens = JSON.parse(savedTokens);
         
-        // 토큰이 유효한지 확인 (간단한 검증)
-        if (tokens.idToken || tokens.accessToken) {
-          console.log("저장된 로그인 상태 복원:", userData);
+        console.log('📋 저장된 토큰 정보:', {
+          id_token: !!tokens.id_token,
+          access_token: !!tokens.access_token,
+          refresh_token: !!tokens.refresh_token
+        });
+        
+        // 통일된 토큰 키로 유효성 검증
+        if (tokens.id_token || tokens.access_token) {
+          console.log("✅ 저장된 로그인 상태 복원 성공:", userData);
           this.setState({
             currentUser: userData,
             isLoggedIn: true
           });
         } else {
           // 토큰이 유효하지 않으면 저장된 데이터 삭제
-          localStorage.removeItem('currentUser');
-          localStorage.removeItem('cognitoTokens');
+          console.log("❌ 유효하지 않은 토큰으로 인해 로그인 상태 초기화");
+          sessionStorage.removeItem('currentUser');
+          sessionStorage.removeItem('cognitoTokens');
         }
+      } else {
+        console.log('📝 저장된 로그인 정보 없음');
       }
     } catch (error) {
-      console.error("로그인 상태 복원 실패:", error);
+      console.error("❌ 로그인 상태 복원 실패:", error);
       // 오류 발생 시 저장된 데이터 삭제
-      localStorage.removeItem('currentUser');
-      localStorage.removeItem('cognitoTokens');
+      sessionStorage.removeItem('currentUser');
+      sessionStorage.removeItem('cognitoTokens');
     }
   };
 
   handleLogin = (userData) => {
     console.log("Cognito 로그인 완료:", userData);
-    console.log("토큰 확인:", userData.id_token);
+    console.log("토큰 확인:", {
+      id_token: !!userData.id_token,
+      access_token: !!userData.access_token,
+      refresh_token: !!userData.refresh_token
+    });
+    console.log("🔐 App.js - 실제 토큰 값:", {
+      id_token: userData.id_token ? userData.id_token.substring(0, 20) + '...' : 'undefined',
+      access_token: userData.access_token ? userData.access_token.substring(0, 20) + '...' : 'undefined',
+      refresh_token: userData.refresh_token ? userData.refresh_token.substring(0, 20) + '...' : 'undefined'
+    });
     
     // 토큰이 있는지 확인
     if (!userData.id_token) {
@@ -88,9 +123,24 @@ class App extends Component {
       return;
     }
     
-    // 토큰 정보를 포함한 사용자 데이터 설정
+    // 통일된 토큰 키로 저장
+    const tokens = {
+      id_token: userData.id_token,
+      access_token: userData.access_token,
+      refresh_token: userData.refresh_token
+    };
+    
+    // sessionStorage에 토큰 저장 (통일된 키 사용)
+    sessionStorage.setItem('cognitoTokens', JSON.stringify(tokens));
+    
+    // 사용자 데이터 설정 (내부 사용을 위한 매핑 포함)
     const userWithTokens = {
       ...userData,
+      // Cognito 원본 키로 통일
+      id_token: userData.id_token,
+      access_token: userData.access_token,
+      refresh_token: userData.refresh_token,
+      // 내부 사용을 위한 매핑
       idToken: userData.id_token,
       accessToken: userData.access_token,
       refreshToken: userData.refresh_token
@@ -101,16 +151,19 @@ class App extends Component {
       isLoggedIn: true
     });
     
-    // localStorage에 사용자 정보와 토큰 저장
-    localStorage.setItem('currentUser', JSON.stringify(userWithTokens));
+    // sessionStorage에 사용자 정보 저장
+    sessionStorage.setItem('currentUser', JSON.stringify(userWithTokens));
     
-    // 토큰만 별도로도 저장
-    const tokens = {
-      idToken: userData.id_token,
-      accessToken: userData.access_token,
-      refreshToken: userData.refresh_token
-    };
-    localStorage.setItem('cognitoTokens', JSON.stringify(tokens));
+    console.log("✅ 토큰 저장 완료:", {
+      cognitoTokens: !!sessionStorage.getItem('cognitoTokens'),
+      currentUser: !!sessionStorage.getItem('currentUser')
+    });
+    
+    // 저장된 토큰 내용 확인
+    const savedTokens = sessionStorage.getItem('cognitoTokens');
+    const savedUser = sessionStorage.getItem('currentUser');
+    console.log("✅ App.js - 저장된 cognitoTokens 내용:", savedTokens ? JSON.parse(savedTokens) : 'null');
+    console.log("✅ App.js - 저장된 currentUser 내용:", savedUser ? JSON.parse(savedUser) : 'null');
     
     console.log("로그인 상태 업데이트 및 저장 완료:", this.state);
   };
@@ -125,9 +178,9 @@ class App extends Component {
 
   handleLogout = async () => {
     try {
-      // localStorage에서 로그인 정보 삭제
-      localStorage.removeItem('currentUser');
-      localStorage.removeItem('cognitoTokens');
+      // sessionStorage에서 로그인 정보 삭제
+      sessionStorage.removeItem('currentUser');
+      sessionStorage.removeItem('cognitoTokens');
       
       this.setState({
         currentUser: null,
@@ -190,6 +243,8 @@ class App extends Component {
                 currentUser={currentUser}
                 isLoggedIn={isLoggedIn}
                 onLogout={this.handleLogout}
+                setIsLoggedIn={(status) => this.setState({ isLoggedIn: status })}
+                setCurrentUser={(user) => this.setState({ currentUser: user })}
               />
             }
           />
@@ -222,6 +277,8 @@ class App extends Component {
                 currentUser={currentUser}
                 isLoggedIn={isLoggedIn}
                 onLogout={this.handleLogout}
+                setIsLoggedIn={(status) => this.setState({ isLoggedIn: status })}
+                setCurrentUser={(user) => this.setState({ currentUser: user })}
               />
             } 
           />

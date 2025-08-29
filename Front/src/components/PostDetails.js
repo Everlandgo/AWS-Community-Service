@@ -130,7 +130,7 @@ class PostDetails extends Component {
      }
   };
 
-  // 댓글 목록을 가져오는 함수
+    // 댓글 목록을 가져오는 함수
   fetchComments = async () => {
     try {
       const postId = this.props.params.postId;
@@ -144,13 +144,19 @@ class PostDetails extends Component {
         this.setState({ comments });
         // 댓글별 좋아요 상태 초기화
         this.initCommentLikeStatus(comments);
-             } else {
-         this.setState({ comments: [] });
-       }
-     } catch (error) {
-       // 에러 발생 시 빈 배열로 설정하여 UI가 깨지지 않도록 함
-       this.setState({ comments: [] });
-     }
+      } else {
+        this.setState({ comments: [] });
+      }
+    } catch (error) {
+      console.warn('댓글 목록 조회 실패 (로그인 상태 유지):', error.message);
+      // 에러 발생 시에도 로그인 상태는 유지하고 댓글만 빈 배열로 설정
+      this.setState({ comments: [] });
+      
+      // 인증 관련 에러인 경우에만 사용자에게 알림
+      if (error.message.includes('인증') || error.message.includes('토큰')) {
+        console.warn('인증 관련 에러로 댓글을 불러올 수 없습니다. 로그인 상태는 유지됩니다.');
+      }
+    }
   };
 
   // 댓글별 좋아요 상태 불러오기
@@ -163,14 +169,22 @@ class PostDetails extends Component {
             if (res && res.success) {
               return [c.id, !!res.data.is_liked];
             }
-          } catch (_) {}
+          } catch (error) {
+            console.warn(`댓글 ${c.id}의 좋아요 상태 확인 실패:`, error.message);
+            // 개별 댓글의 좋아요 상태 확인 실패는 전체 프로세스를 중단시키지 않음
+          }
           return [c.id, false];
         })
       );
       const statusMap = Object.fromEntries(likeStatusEntries);
       this.setState({ commentLikeStatus: statusMap });
-    } catch (e) {
-      console.warn('댓글 좋아요 상태 초기화 실패:', e);
+    } catch (error) {
+      console.warn('댓글 좋아요 상태 초기화 실패 (로그인 상태 유지):', error.message);
+      // 에러 발생 시에도 기본 상태로 설정하여 UI가 깨지지 않도록 함
+      const defaultStatus = Object.fromEntries(
+        (comments || []).map(c => [c.id, false])
+      );
+      this.setState({ commentLikeStatus: defaultStatus });
     }
   };
 
