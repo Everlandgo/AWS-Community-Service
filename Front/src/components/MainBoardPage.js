@@ -2,14 +2,6 @@ import React, { Component } from 'react';
 import CommonLayout from './CommonLayout';
 import "../styles/MainBoardPage.css"
 
-const handleWritePostClick = () => {
-  if (onWritePost) {
-    onWritePost();
-  } else {
-    navigate('/write');
-  }
-};
-
 class MainBoardPage extends Component {
   constructor(props) {
     super(props);
@@ -160,7 +152,6 @@ class MainBoardPage extends Component {
         searchTerm={searchTerm}
         onCategoryChange={this.handleCategoryChange}
         onSearchChange={this.handleSearchChange}
-        onWritePost={this.handleWritePost}
         onLogout={this.props.onLogout}
       >
         {/* 필터 및 정렬 섹션 */}
@@ -181,7 +172,10 @@ class MainBoardPage extends Component {
           </div>
           {isLoggedIn && (
             <div className="action-section">
-              <button className="write-post-button" onClick={handleWritePostClick}>
+              <button 
+                className="write-post-button" 
+                onClick={this.handleWritePost}
+              >
                 + 글쓰기
               </button>
             </div>

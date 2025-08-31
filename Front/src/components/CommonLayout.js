@@ -2,7 +2,7 @@ import React from 'react';
 import { Search, Plus, User, Home, LogIn, UserPlus, LogOut } from 'lucide-react';
 import "../styles/CommonLayout.css";
 
-const CommonLayout = ({ children, isLoggedIn, currentUser, navigate, hideSidebar = false, activeCategory, onCategoryChange, searchTerm = '', onSearchChange, onWritePost, onLogout }) => {
+const CommonLayout = ({ children, isLoggedIn, currentUser, navigate, hideSidebar = false, activeCategory, onCategoryChange, searchTerm = '', onSearchChange, onLogout }) => {
   const categories = ["자유", "동물/반려동물", "여행", "건강/헬스", "연예인"];
 
   const handleHomeClick = () => {
@@ -21,14 +21,6 @@ const CommonLayout = ({ children, isLoggedIn, currentUser, navigate, hideSidebar
   const handleUserClick = () => {
     // 사용자 개인 페이지로 이동
     navigate('/mypage');
-  };
-
-  const handleWritePostClick = () => {
-    if (onWritePost) {
-      onWritePost();
-    } else {
-      navigate('/write');
-    }
   };
 
   const handleLogoutClick = () => {
