@@ -294,7 +294,13 @@ class SignupPage extends Component {
   render() {
     const { currentStep } = this.state;
     return (
-      <CommonLayout isLoggedIn={false} currentUser={null} navigate={this.props.navigate}>
+      <CommonLayout 
+        isLoggedIn={false} 
+        currentUser={null} 
+        navigate={this.props.navigate}
+        hideSidebar={true} 
+        hideSearch={true}
+      >
         <div className="auth-page">
           {currentStep === 1 ? this.renderStep1() : this.renderStep2()}
         </div>

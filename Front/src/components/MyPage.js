@@ -151,7 +151,8 @@ class MyPage extends Component {
         isLoggedIn={isLoggedIn}
         currentUser={currentUser}
         navigate={this.props.navigate}
-        hideSidebar={true} // 마이페이지에서만 사이드바 숨기기
+        hideSidebar={true} 
+        hideSearch={true}
         onLogout={this.props.onLogout}
       >
         <div className="mypage-container">

@@ -388,6 +388,7 @@ class PostDetails extends Component {
         isLoggedIn={isLoggedIn}
         currentUser={this.props.currentUser}
         navigate={this.props.navigate}
+        hideSearch={true}
         activeCategory={post.category || 'ALL'}
         onCategoryChange={(category) => {
           this.props.navigate(`/?category=${encodeURIComponent(category)}`);

@@ -153,7 +153,7 @@ class WritePostPage extends Component {
 
   render() {
     const { isLoggedIn, currentUser, profileImage } = this.props;
-    const { title, content, category, isLoading, error } = this.state;
+    const { postId, title, content, category, isLoading, error } = this.state;
 
     // 디버깅을 위한 로그
     console.log('WritePostPage 렌더링:', { isLoggedIn, currentUser });
@@ -216,6 +216,7 @@ class WritePostPage extends Component {
         isLoggedIn={isLoggedIn}
         currentUser={currentUser}
         navigate={this.props.navigate}
+        hideSearch={true}
         onCategoryChange={this.handleCategoryChange}
         onLogout={this.props.onLogout}
       >

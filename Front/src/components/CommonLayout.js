@@ -2,7 +2,7 @@ import React from 'react';
 import { Search, Plus, User, Home, LogIn, UserPlus, LogOut } from 'lucide-react';
 import "../styles/CommonLayout.css";
 
-const CommonLayout = ({ children, isLoggedIn, currentUser, navigate, hideSidebar = false, activeCategory, onCategoryChange, searchTerm = '', onSearchChange, onLogout }) => {
+const CommonLayout = ({ children, isLoggedIn, currentUser, navigate, hideSidebar = false, hideSearch = false, activeCategory, onCategoryChange, searchTerm = '', onSearchChange, onLogout }) => {
   const categories = ["자유", "동물/반려동물", "여행", "건강/헬스", "연예인"];
 
   const handleHomeClick = () => {
@@ -58,18 +58,20 @@ const CommonLayout = ({ children, isLoggedIn, currentUser, navigate, hideSidebar
           </div>
 
           <div className="search-section">
-            <div className="search-bar-container">
-              <input
-                type="text"
-                className="search-input"
-                placeholder="게시글 검색"
-                value={searchTerm || ''}
-                onChange={onSearchChange ? (e) => onSearchChange(e) : undefined}
-              />
-              <button className="search-button">
-                <Search size={16} />
-              </button>
-            </div>
+            {!hideSearch && (
+              <div className="search-bar-container">
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="게시글 검색"
+                  value={searchTerm || ''}
+                  onChange={onSearchChange ? (e) => onSearchChange(e) : undefined}
+                />
+                <button className="search-button">
+                  <Search size={16} />
+                </button>
+              </div>
+            )} 
           </div>
 
           <div className="header-actions">
@@ -121,22 +123,24 @@ const CommonLayout = ({ children, isLoggedIn, currentUser, navigate, hideSidebar
         <div className="main-content">
           {/* 왼쪽 사이드바 */}
           <aside className="sidebar">
-            <div className="sidebar-content">
-              <div className="category-section">
-                <h3 className="sidebar-title">카테고리</h3>
-                <div className="category-list">
-                  {categories.map((category) => (
-                                         <button
-                       key={category}
-                       className={`category-item ${activeCategory === category ? 'active' : ''}`}
-                       onClick={() => onCategoryChange ? onCategoryChange(category) : undefined}
-                     >
-                       {category}
-                     </button>
-                  ))}
+            {!hideSidebar && (
+              <div className="sidebar-content">
+                <div className="category-section">
+                  <h3 className="sidebar-title">카테고리</h3>
+                  <div className="category-list">
+                    {categories.map((category) => (
+                                          <button
+                        key={category}
+                        className={`category-item ${activeCategory === category ? 'active' : ''}`}
+                        onClick={() => onCategoryChange ? onCategoryChange(category) : undefined}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </aside>
 
           {/* 메인 콘텐츠 영역 */}

@@ -144,6 +144,8 @@ class LoginPage extends Component {
         isLoggedIn={false}
         currentUser={null}
         navigate={this.props.navigate}
+        hideSidebar={true} 
+        hideSearch={true}
         onCategoryChange={this.handleCategoryChange}
       >
         <div className="auth-page">
