@@ -20,7 +20,7 @@ class PostDetails extends Component {
       post: null,
       isLoading: true,
       error: null,
-      activeCategory: "전체",
+      activeCategory: "ALL",
       isLiked: false, // 좋아요 상태
       comments: [], // 댓글 목록을 저장할 상태
       newComment: "", // 새 댓글 내용을 저장할 상태
@@ -28,7 +28,7 @@ class PostDetails extends Component {
       editingCommentId: null, // 현재 수정 중인 댓글 ID
       editingContent: "" // 수정 중인 내용
     };
-    this.categories = ["전체", "동물/반려동물", "여행", "건강/헬스", "연예인"];
+    this.categories = ["ALL", "동물/반려동물", "여행", "건강/헬스", "연예인"];
   }
 
   componentDidMount() {
@@ -388,7 +388,7 @@ class PostDetails extends Component {
         isLoggedIn={isLoggedIn}
         currentUser={this.props.currentUser}
         navigate={this.props.navigate}
-        activeCategory={post.category || '전체'}
+        activeCategory={post.category || 'ALL'}
         onCategoryChange={(category) => {
           this.props.navigate(`/?category=${encodeURIComponent(category)}`);
         }}
