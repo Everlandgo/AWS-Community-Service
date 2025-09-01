@@ -60,7 +60,7 @@ class LoginPage extends Component {
       user.authenticateUser(authDetails, {
         onSuccess: (session) => {
           // 로그인 성공
-
+          
           const idToken = session.getIdToken().getJwtToken();
           const accessToken = session.getAccessToken().getJwtToken();
           const refreshToken = session.getRefreshToken().getToken();
