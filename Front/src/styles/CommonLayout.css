@@ -1,0 +1,288 @@
+/* CSS 변수 정의 */
+:root {
+  --default-bg: #d6dee7;
+  --darker-bg: #c8cfd6;
+  --dark-navy: #3e4a5b;
+  --darker-navy: #353f4d;
+  --white-shine: #fff;
+  --white: #fafafa;
+  --white-shadow: #ececec;
+  --text-default: #1e293b;
+  --text-light: #2c384a;
+  --placeholder-grey: #707274d8;
+  --placeholder-white: #eff2f5d8;
+  --title: #1e293b;
+  --subtitle: #485362;
+  --posttitle: #1d2025;
+  --primary: hsl(222.2 47.4% 11.2%);
+  --primary-foreground: hsl(210 40% 98%);
+  --secondary: hsl(210 40% 96%);
+  --secondary-foreground: hsl(222.2 84% 4.9%);
+  --muted: hsl(210 40% 96%);
+  --muted-foreground: hsl(215.4 16.3% 46.9%);
+  --accent: hsl(210 40% 96%);
+  --accent-foreground: hsl(222.2 84% 4.9%);
+  --destructive: hsl(0 84.2% 60.2%);
+  --destructive-foreground: hsl(210 40% 98%);
+  --border: hsl(214.3 31.8% 91.4%);
+  --input: hsl(214.3 31.8% 91.4%);
+  --ring: hsl(222.2 84% 4.9%);
+  --radius: 0.625rem;
+}
+
+/* ===== 전체 레이아웃 구조 ===== */
+.main-board-wrapper {
+  display: flex;
+  min-height: 100%;
+  height: fit-content;
+  background-color: var(--color-default-bg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+
+/* ===== 상단 헤더 (전체 너비) ===== */
+.main-header {
+  width: 100vw;
+  height: 120px;
+  display: flex;
+  position: absolute;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  width: 100%;
+  padding: 32px 24px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--default-bg);
+  gap: 24px;
+}
+
+/* 로고 영역 */
+.logo-section {
+  margin-left: 80px;
+}
+
+.logo-placeholder {
+  width: fit-content;
+  height: fit-content;
+  cursor: pointer;
+  background-color: transparent;
+}
+
+.logo-image {
+  width: 60px;
+  height: auto;
+}
+
+/* 검색바 */
+.search-section {
+  width: 100%;
+  max-width: 600px;
+  margin-left: 128px;
+}
+
+.search-bar-container {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  width:80%;
+  border-radius: 999px;
+  background-color: var(--white);
+  padding: 12px 24px;
+  margin: 0px 12px;
+  box-shadow: outset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.search-input {
+  border: none;
+  outline: none;
+  flex-grow: 1;
+  font-size: 16px;
+  background-color: transparent;
+  color: var(--text-default);
+}
+
+.search-input::placeholder {
+  color: var(--placeholder-grey);
+  font-size: 16px;
+}
+
+.search-button {
+  background: none;
+  width: 20px;
+  height: 20px;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--darker-bg);
+}
+
+/* 헤더 오른쪽 액션 */
+.header-actions {
+  display: flex;
+  flex-direction: row;
+  width: fit-content;
+  align-items: center;
+  padding-left: 20px;
+  margin-right: 24px;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.header-button {
+  flex-shrink: 0;
+  padding: 10px 20px;
+  align-items: center;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  font-size: 14px;
+  box-shadow: outset 0 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+  
+  background-color: var(--dark-navy);
+  color: var(--white);
+  border: none;
+}
+
+.header-button:first-child {
+  background-color: var(--white);
+  color: var(--dark-navy);
+  border: none;
+}
+
+/* 사용자 프로필 */
+.user-profile-section {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
+
+.user-profile {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  background-color: var(--white);
+  color: var(--dark-navy);
+}
+
+.user-icon {
+  width: 24px;
+  height: 24px;
+  background-color: var(--darker-bg);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dark-navy);
+  font-size: 12px;
+}
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 40px;
+  border: none;
+  border-radius: var(--radius);
+  background-color: var(--dark-navy);
+  color: var(--white-shine);
+}
+
+/* ===== 메인 콘텐츠 영역 ===== */
+.main-board-container {
+  display: flex;
+  width: 100%;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  margin: 0;
+  width: 100%;
+  padding: 24px;
+  margin-top: 120px;
+}
+
+/* ===== 왼쪽 사이드바 (카테고리) ===== */
+.sidebar {
+  width: 240px;
+  background-color: transparent; 
+  padding: 32px 12px;
+  margin-top: 128px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  height: 100vh;
+}
+
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  padding-right: 24px;
+}
+
+.sidebar-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--title);
+  margin-bottom: 24px;
+}
+
+.category-list {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  padding: 0;
+  gap: 8px;
+}
+
+.category-list button {
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background-color: transparent;
+  border: none;
+  font-size: 14px;
+  color: var(--color-text-light-grey);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.category-list button:hover {
+  background-color: #ffffff85;
+}
+
+.category-list button.active {
+  background-color: #ffffffb0;
+  font-weight: 550;
+  color: var(--color-text-default);
+}
+
+
+
+/* ===== 오른쪽 메인 콘텐츠 ===== */
+.content-area {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 24px;
+  margin-left: 240px;
+}
+
+.content-main.full-width {
+  width: 100%;
+  max-width: none;
+}

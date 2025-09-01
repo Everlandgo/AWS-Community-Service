@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { ArrowLeft, Heart, User } from 'lucide-react';
 import CommonLayout from './CommonLayout';
 import CommentService from '../services/CommentService';
+import '../styles/PostDetailPage.css';
 
 // useParams를 클래스 컴포넌트에서 사용하기 위한 래퍼
 function withParams(Component) {

@@ -1,0 +1,247 @@
+:root {
+  --default-bg: #d6dee7;
+  --darker-bg: #c8cfd6;
+  --dark-navy: #3e4a5b;
+  --darker-navy: #353f4d;
+  --white-shine: #fff;
+  --white: #fafafa;
+  --white-shadow: #ececec;
+  --text-default: #1e293b;
+  --text-light: #2c384a;
+  --placeholder-grey: #707274d8;
+  --placeholder-white: #eff2f5d8;
+  --title: #1e293b;
+  --subtitle: #485362;
+  --posttitle: #1d2025;
+  --primary: hsl(222.2 47.4% 11.2%);
+  --primary-foreground: hsl(210 40% 98%);
+  --secondary: hsl(210 40% 96%);
+  --secondary-foreground: hsl(222.2 84% 4.9%);
+  --muted: hsl(210 40% 96%);
+  --muted-foreground: hsl(215.4 16.3% 46.9%);
+  --accent: hsl(210 40% 96%);
+  --accent-foreground: hsl(222.2 84% 4.9%);
+  --destructive: hsl(0 84.2% 60.2%);
+  --destructive-foreground: hsl(210 40% 98%);
+  --border: hsl(214.3 31.8% 91.4%);
+  --input: hsl(214.3 31.8% 91.4%);
+  --ring: hsl(222.2 84% 4.9%);
+  --radius: 0.625rem;
+}
+
+/* Topbar */
+.filter-section {
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+/* Sort buttons styles */
+.sort-buttons {
+  margin-bottom: 24px;
+  display: flex;
+}
+
+.sort-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--dark-navy);
+  cursor: pointer;
+  padding-bottom: 8px;
+  margin-right: 24px;
+  position: relative;
+  font-weight: 500;
+}
+
+.sort-btn.active {
+  color: var(--darker-navy);
+  font-weight: 600;
+}
+
+.sort-btn.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--darker-navy);
+}
+
+/* ==== 글쓰기 버튼 === */
+.action-section {
+  margin: 12px 0px;
+}
+
+.write-post-button {
+  width: 100px;
+  padding: 8px 12px;
+  align-content: center;
+  border: none;
+  border-radius: 999px;
+  background-color: var(--dark-navy);
+  color: var(--white-shine);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: outset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* 게시글 테이블 */
+.posts-table {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--white);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid var(--darker-bg);
+}
+
+/* 테이블 해더 */
+.table-header {
+  display: grid;
+  grid-template-columns: 120px 3fr 120px 100px 80px 80px;
+  padding: 8px 4px;
+  margin-bottom: 8px;
+}
+
+.header-row {
+  display: contents; /* Allows the cells to participate in the grid */
+
+}
+.header-cell {
+  font-size: 16px;
+  color: var(--title);
+  font-weight: 600;
+  padding: 0 15px;
+}
+
+/* 게시글 목록 */
+.table-body {
+  display: grid;
+  grid-template-columns: 120px 3fr 120px 100px 80px 80px;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background-color: var(--white-shine);
+  overflow: hidden;
+}
+
+.table-row {
+  display: contents; /* Makes children (cells) participate directly in the parent grid */
+}
+
+/* Style for each individual table cell */
+.table-cell {
+  padding: 16px 16px;
+  border-bottom: 1px solid var(--border);
+  background-color: var(--white-shine);
+  display: flex; /* Use flexbox to center content vertically */
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+}
+
+/* Apply a hover effect to the entire row */
+.table-row:hover .table-cell {
+  background-color: var(--white-shadow);
+}
+
+/* Specific styling for the title cell */
+.title-cell {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--posttitle);
+}
+
+.post-title-link {
+  text-decoration: none;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Specific styling for the category tag */
+.category-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--white-shine);
+  background-color: var(--dark-navy);
+}
+
+/* Styling for the author cell */
+.author-cell {
+  color: var(--text-light);
+}
+
+/* Styling for the date cell */
+.date-cell {
+  color: var(--text-light);
+  font-size: 12px;
+}
+
+/* Styling for the views and likes cells */
+.views-cell,
+.likes-cell {
+  color: var(--text-light);
+  justify-content: center;
+}
+
+/* Styling for the "No Posts" message */
+.no-posts {
+  padding: 40px;
+  color: var(--muted-foreground);
+  font-size: 16px;
+  text-align: center;
+  /* Span the full width of the grid */
+  grid-column: 1 / -1; 
+}
+
+
+
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.page-btn {
+  background-color: transparent;
+  border: none;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.page-btn:hover {
+  background-color: #e2e8f0;
+}
+
+.page-btn.active {
+  color: #1e293b;
+}
+

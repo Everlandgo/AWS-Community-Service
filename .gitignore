@@ -111,6 +111,11 @@ Post-master/uploads/
 
 # Python
 __pycache__/
+*/__pycache__/
+Comment-master/__pycache__/
+Comment-master/comment/__pycache__/
+Post-master/__pycache__/
+Post-master/post/__pycache__/
 *.py[cod]
 *$py.class
 *.so
