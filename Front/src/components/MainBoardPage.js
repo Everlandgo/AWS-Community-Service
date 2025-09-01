@@ -15,7 +15,7 @@ class MainBoardPage extends Component {
       searchTerm: "",
       sortBy: "최신순"
     };
-    this.categories = ["ALL", "자유", "동물/반려동물", "여행", "건강/헬스", "연예인"];
+    this.categories = ["자유", "동물/반려동물", "여행", "건강/헬스", "연예인"];
   }
 
   componentDidMount() {
@@ -94,8 +94,11 @@ class MainBoardPage extends Component {
     let filtered = allPosts;
 
     // 카테고리 필터링
-    if (activeCategory !== "ALL") {
+    if (activeCategory == "ALL") {
+      this.setState({ filteredPosts: this.state.allPosts });
+    } else {
       filtered = filtered.filter(post => post.category === activeCategory);
+      this.setState({ filteredPosts: filtered });
     }
 
     // 검색어 필터링

@@ -6,6 +6,9 @@ const CommonLayout = ({ children, isLoggedIn, currentUser, navigate, hideSidebar
   const categories = ["자유", "동물/반려동물", "여행", "건강/헬스", "연예인"];
 
   const handleHomeClick = () => {
+    if (onCategoryChange) {
+      onCategoryChange("ALL");
+    }
     // 홈으로 이동
     navigate('/');
   };

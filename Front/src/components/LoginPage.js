@@ -144,6 +144,7 @@ class LoginPage extends Component {
         isLoggedIn={false}
         currentUser={null}
         navigate={this.props.navigate}
+        onCategoryChange={this.handleCategoryChange}
       >
         <div className="auth-page">
           <div className="auth-container">

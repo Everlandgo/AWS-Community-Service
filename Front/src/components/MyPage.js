@@ -101,6 +101,8 @@ class MyPage extends Component {
           isLoggedIn={isLoggedIn}
           currentUser={currentUser}
           navigate={this.props.navigate}
+          onCategoryChange={this.handleCategoryChange}
+          onLogout={this.props.onLogout}
         >
           <div className="auth-page">
             <div className="auth-container">
@@ -120,6 +122,7 @@ class MyPage extends Component {
         currentUser={currentUser}
         navigate={this.props.navigate}
         hideSidebar={true} // 마이페이지에서만 사이드바 숨기기
+        onLogout={this.props.onLogout}
       >
         <div className="mypage-container">
           {/* 뒤로가기 버튼을 제목 아래에 */}
