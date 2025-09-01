@@ -329,11 +329,23 @@ def create_comment(post_id):
         if not data or 'content' not in data:
             return api_error("댓글 내용은 필수입니다", 400)
         
+        # Cognito 사용자 정보 추출 및 검증
+        current_user = request.current_user
+        user_sub = current_user.get("sub")
+        user_name = current_user.get("cognito:username") or current_user.get("username") or "Unknown"
+        
+        # user_sub가 없으면 에러
+        if not user_sub:
+            logger.error(f"사용자 sub 정보가 없음: {current_user}")
+            return api_error("사용자 정보를 확인할 수 없습니다", 400)
+        
+
+        
         # 댓글 생성
         comment = CommentService.create_comment(
             post_id=post_id,
-            user_id=request.current_user["sub"],
-            user_name=request.current_user.get("cognito:username", "Unknown"),
+            user_id=user_sub,
+            user_name=user_name,
             content=data["content"]
         )
         
@@ -354,12 +366,22 @@ def update_comment(comment_id):
         if not data or 'content' not in data:
             return api_error("댓글 내용은 필수입니다", 400)
         
+        # Cognito 사용자 정보 추출 및 검증
+        current_user = request.current_user
+        user_sub = current_user.get("sub")
+        
+        if not user_sub:
+            logger.error(f"사용자 sub 정보가 없음: {current_user}")
+            return api_error("사용자 정보를 확인할 수 없습니다", 400)
+        
         # 댓글 존재 및 작성자 확인
         comment = CommentService.get_comment_by_id(comment_id)
         if not comment:
             return api_error("댓글을 찾을 수 없습니다", 404)
         
-        if comment.user_id != request.current_user["sub"]:
+
+        
+        if comment.user_id != user_sub:
             return api_error("이 댓글을 수정할 권한이 없습니다", 403)
         
         # 댓글 수정
@@ -376,12 +398,22 @@ def update_comment(comment_id):
 def delete_comment(comment_id):
     """댓글 삭제"""
     try:
+        # Cognito 사용자 정보 추출 및 검증
+        current_user = request.current_user
+        user_sub = current_user.get("sub")
+        
+        if not user_sub:
+            logger.error(f"사용자 sub 정보가 없음: {current_user}")
+            return api_error("사용자 정보를 확인할 수 없습니다", 400)
+        
         # 댓글 존재 및 작성자 확인
         comment = CommentService.get_comment_by_id(comment_id)
         if not comment:
             return api_error("댓글을 찾을 수 없습니다", 404)
         
-        if comment.user_id != request.current_user["sub"]:
+
+        
+        if comment.user_id != user_sub:
             return api_error("이 댓글을 삭제할 권한이 없습니다", 403)
         
         # 댓글 삭제
@@ -398,14 +430,20 @@ def delete_comment(comment_id):
 def get_my_comments():
     """내 댓글 목록 조회"""
     try:
+        # Cognito 사용자 정보 추출 및 검증
+        current_user = request.current_user
+        user_sub = current_user.get("sub")
+        
+        if not user_sub:
+            logger.error(f"사용자 sub 정보가 없음: {current_user}")
+            return api_error("사용자 정보를 확인할 수 없습니다", 400)
+        
         page = int(request.args.get('page', 1))
         size = int(request.args.get('size', 10))
         
         skip = (page - 1) * size
         
-        comments = CommentService.get_comments_by_user(
-            request.current_user["sub"], skip=skip, limit=size
-        )
+        comments = CommentService.get_comments_by_user(user_sub, skip=skip, limit=size)
         
         # 댓글을 딕셔너리로 변환
         comments_data = [comment.to_dict() for comment in comments]
@@ -421,15 +459,21 @@ def get_my_comments():
 def toggle_comment_like(comment_id):
     """댓글 좋아요 토글"""
     try:
+        # Cognito 사용자 정보 추출 및 검증
+        current_user = request.current_user
+        user_sub = current_user.get("sub")
+        
+        if not user_sub:
+            logger.error(f"사용자 sub 정보가 없음: {current_user}")
+            return api_error("사용자 정보를 확인할 수 없습니다", 400)
+        
         # 댓글 존재 확인
         comment = CommentService.get_comment_by_id(comment_id)
         if not comment:
             return api_error("댓글을 찾을 수 없습니다", 404)
         
         # 좋아요 토글
-        is_liked = CommentService.toggle_comment_like(
-            comment_id, request.current_user["sub"]
-        )
+        is_liked = CommentService.toggle_comment_like(comment_id, user_sub)
         
         if is_liked:
             message = "댓글에 좋아요를 눌렀습니다"
@@ -450,9 +494,15 @@ def toggle_comment_like(comment_id):
 def get_comment_like_status(comment_id):
     """댓글 좋아요 상태 확인"""
     try:
-        is_liked = CommentService.get_comment_like_status(
-            comment_id, request.current_user["sub"]
-        )
+        # Cognito 사용자 정보 추출 및 검증
+        current_user = request.current_user
+        user_sub = current_user.get("sub")
+        
+        if not user_sub:
+            logger.error(f"사용자 sub 정보가 없음: {current_user}")
+            return api_error("사용자 정보를 확인할 수 없습니다", 400)
+        
+        is_liked = CommentService.get_comment_like_status(comment_id, user_sub)
         
         return api_response(data={
             "comment_id": comment_id,

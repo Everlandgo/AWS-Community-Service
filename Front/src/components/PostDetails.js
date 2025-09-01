@@ -298,6 +298,22 @@ class PostDetails extends Component {
 
   // 현재 사용자 sub 추출
   getCurrentUserSub = () => {
+    // JWT 토큰에서 실제 sub 값 추출 (더 안전한 방법)
+    try {
+      if (this.props.currentUser?.access_token) {
+        const token = this.props.currentUser.access_token;
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const payload = JSON.parse(window.atob(base64));
+        
+
+        return payload.sub || this.props.currentUser?.sub || null;
+      }
+    } catch (error) {
+      console.warn('JWT 토큰 파싱 실패:', error);
+    }
+    
+    // 폴백: 기존 방식
     return this.props.currentUser?.sub || null;
   };
 
