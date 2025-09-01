@@ -39,7 +39,7 @@ class MyPage extends Component {
       }
 
       // 백엔드에서 사용자가 작성한 글 가져오기
-              const response = await fetch(`http://localhost:8081/api/v1/posts?author_id=${currentUser.sub}`);
+      const response = await fetch(`http://localhost:8081/api/v1/posts?author_id=${currentUser.sub}`);
       if (response.ok) {
         const data = await response.json();
         const posts = data.posts || data.data || [];
@@ -198,7 +198,12 @@ class MyPage extends Component {
                           <span className="my-category-tag">{post.category || '미분류'}</span>
                         </div>
                         <div className="my-table-cell title-cell">
-                          <span className="my-post-title">{post.title}</span>
+                          <span 
+                            className="my-post-title"
+                            onClick={() => this.props.navigate(`/post/${post.id}`)}
+                          >
+                            {post.title}
+                          </span>
                         </div>
                         <div className="my-table-cell date-cell">
                           {new Date(post.created_at).toLocaleDateString('ko-KR')}
