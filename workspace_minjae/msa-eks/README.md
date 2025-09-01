@@ -175,6 +175,29 @@ kubectl get pods --all-namespaces
 - **외부 도메인**: `api.hhottdogg.shop`
 - **API Gateway**: `https://{api-id}.execute-api.ap-northeast-2.amazonaws.com/prod`
 
+## ⚙️ 운영 절차 (요약)
+
+1) API Gateway 활성화 배포
+```powershell
+terraform apply -var=enable_apigw=true
+```
+
+2) 출력값 확인
+```powershell
+terraform output httpapi_invoke_url
+terraform output api_id
+```
+
+3) 배포 중 EKS 연결 타임아웃 발생 시(웹훅/컨트롤러 준비 지연 등)
+- `02-eks-cluster.tf`에서 `cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]`로 임시 완화 → 아래 명령으로 클러스터만 반영
+```powershell
+terraform apply -target="module.eks.aws_eks_cluster.this[0]"
+```
+- 배포 완료 후 반드시 본인 IP `/32`로 재축소 적용
+
+4) Ingress NLB 확인 팁
+- Ingress Service에 주석으로 이름을 고정했으므로 ELB 콘솔에서 `msa-forum-ingress-nlb`가 생성됐는지 확인
+
 ## 📝 진행 이력 (운영 메모)
 
 - 2025-08-29
@@ -204,6 +227,14 @@ terraform output api_id
 - Ingress NLB가 생성되었는지 및 태그 `kubernetes.io/service-name=ingress-nginx/ingress-nginx-controller`가 부여되었는지 확인
 - `aws_apigatewayv2_integration`가 참조하는 리스너 ARN이 존재하는지 확인(포트 80)
 
+### 추가 문제 해결 가이드
+- Error: reading ELBv2 Load Balancers: couldn't find resource
+  - 원인: Ingress NLB가 아직 생성/이름 반영 전이거나 지역/계정 불일치
+  - 조치: Ingress를 먼저 재적용 후 잠시 대기, 콘솔에서 `msa-forum-ingress-nlb` 확인. 필요 시 `data "aws_lb"`를 태그 기반 조회로 변경 가능
+- Kubernetes cluster unreachable / i/o timeout
+  - 원인: 컨트롤 플레인/웹훅 준비 지연 또는 CIDR 제한
+  - 조치: 위 절차로 CIDR 일시 완화 → 배포 완료 후 `/32`로 재축소
+
 ## 🚨 주의사항
 
 1. **권한 문제**: 배포 전에 AWS 사용자에게 필요한 권한이 부여되었는지 확인
@@ -217,6 +248,40 @@ terraform output api_id
 1. **권한 부족**: IAM 정책 확인 및 수정
 2. **VPC 제한**: VPC 제한 확인
 3. **서브넷 충돌**: CIDR 블록 중복 확인
+
+### 안전한 삭제(테라폼 destroy 전용) 가이드
+
+적용(Apply) 없이 오류 없이 삭제하려면 아래 순서를 권장합니다.
+
+1) API Gateway 비활성화 플래그로 데이터 조회 차단
+```powershell
+terraform destroy -var=enable_apigw=false -target="aws_apigatewayv2_stage.prod" -target="aws_apigatewayv2_route.v1_proxy" -target="aws_apigatewayv2_integration.nlb_proxy" -target="aws_apigatewayv2_api.httpapi" -target="aws_apigatewayv2_vpc_link.vpclink" -target="aws_security_group.apigw_sg"
+```
+
+2) Kubernetes/Helm 리소스 우선 제거(클러스터 연결 가능 시)
+```powershell
+terraform destroy -target="helm_release.alb" -target="helm_release.ebs" -target="helm_release.extdns" -target="helm_release.ingress" -target="helm_release.metrics" -target="helm_release.cluster_autoscaler" -target="helm_release.node_termination_handler"
+```
+
+3) 만약 2)에서 연결 타임아웃으로 실패한다면(웹훅/엔드포인트 이슈)
+- 상태에서 해당 항목만 제거 후 진행(리소스는 클러스터 삭제로 함께 제거됨)
+```powershell
+terraform state rm helm_release.alb helm_release.ebs helm_release.extdns helm_release.ingress helm_release.metrics helm_release.cluster_autoscaler helm_release.node_termination_handler
+```
+
+4) EKS 클러스터 및 의존 리소스 삭제
+```powershell
+terraform destroy -target="module.eks"
+```
+
+5) 나머지 네트워크/보안 리소스 일괄 삭제
+```powershell
+terraform destroy
+```
+
+추가 팁:
+- destroy 중 데이터 소스/리프레시로 인한 실패를 줄이려면 `-refresh=false`를 옵션으로 함께 사용 가능합니다.
+- Ingress NLB 탐색을 피하기 위해 1)에서 `-var=enable_apigw=false`를 반드시 지정하세요(데이터 소스 미평가).
 
 ### 로그 확인
 ```bash
