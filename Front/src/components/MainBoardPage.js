@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import CommonLayout from './CommonLayout';
+import "../styles/MainBoardPage.css"
 
 class MainBoardPage extends Component {
   constructor(props) {
@@ -10,11 +11,11 @@ class MainBoardPage extends Component {
       filteredPosts: [], // 필터링된 게시글
       isLoading: true,
       error: null,
-      activeCategory: "전체",
+      activeCategory: "ALL",
       searchTerm: "",
       sortBy: "최신순"
     };
-    this.categories = ["전체", "동물/반려동물", "여행", "건강/헬스", "연예인"];
+    this.categories = ["ALL", "자유", "동물/반려동물", "여행", "건강/헬스", "연예인"];
   }
 
   componentDidMount() {
@@ -72,7 +73,7 @@ class MainBoardPage extends Component {
   };
 
   filterPostsByCategory = (category) => {
-    if (category === "전체") {
+    if (category === "ALL") {
       // 전체 카테고리일 때는 모든 게시글 표시
       this.setState({ filteredPosts: this.state.allPosts });
     } else {
@@ -93,7 +94,7 @@ class MainBoardPage extends Component {
     let filtered = allPosts;
 
     // 카테고리 필터링
-    if (activeCategory !== "전체") {
+    if (activeCategory !== "ALL") {
       filtered = filtered.filter(post => post.category === activeCategory);
     }
 
@@ -151,23 +152,10 @@ class MainBoardPage extends Component {
         searchTerm={searchTerm}
         onCategoryChange={this.handleCategoryChange}
         onSearchChange={this.handleSearchChange}
-        onWritePost={this.handleWritePost}
         onLogout={this.props.onLogout}
       >
         {/* 필터 및 정렬 섹션 */}
-        <div className="filter-section">
-          <div className="category-filters">
-            {this.categories.slice(1).map((category) => (
-              <button
-                key={category}
-                className={`category-filter-btn ${activeCategory === category ? 'active' : ''}`}
-                onClick={() => this.handleCategoryChange(category)}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-          
+        <div className="filter-section">          
           <div className="sort-buttons">
             <button
               className={`sort-btn ${sortBy === '최신순' ? 'active' : ''}`}
@@ -182,6 +170,16 @@ class MainBoardPage extends Component {
               인기순
             </button>
           </div>
+          {isLoggedIn && (
+            <div className="action-section">
+              <button 
+                className="write-post-button" 
+                onClick={this.handleWritePost}
+              >
+                + 글쓰기
+              </button>
+            </div>
+          )}
         </div>
 
         {/* 게시글 테이블 */}
@@ -189,12 +187,12 @@ class MainBoardPage extends Component {
           {/* 테이블 헤더 */}
           <div className="table-header">
             <div className="header-row">
-              <div className="header-cell category-cell">카테고리</div>
-              <div className="header-cell title-cell">제목</div>
-              <div className="header-cell author-cell">글쓴이</div>
-              <div className="header-cell date-cell">작성날짜</div>
-              <div className="header-cell views-cell">조회수</div>
-              <div className="header-cell likes-cell">좋아요</div>
+              <div className="header-cell">카테고리</div>
+              <div className="header-cell">제목</div>
+              <div className="header-cell">글쓴이</div>
+              <div className="header-cell">작성날짜</div>
+              <div className="header-cell">조회수</div>
+              <div className="header-cell">좋아요</div>
             </div>
           </div>
 
@@ -223,7 +221,7 @@ class MainBoardPage extends Component {
               <div className="no-posts" style={{ 
                 textAlign: 'center', 
                 padding: '40px', 
-                color: 'var(--muted-foreground)',
+                color: 'var(--white)',
                 fontSize: '16px',
                 gridColumn: '1 / -1'
               }}>
@@ -232,101 +230,6 @@ class MainBoardPage extends Component {
             )}
           </div>
         </div>
-
-        <style jsx>{`
-          .posts-table {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            margin-top: 20px;
-          }
-
-          .table-header {
-            background: #f8f9fa;
-            border-bottom: 2px solid #e9ecef;
-          }
-
-          .header-row {
-            display: grid;
-            grid-template-columns: 100px 1fr 120px 120px 80px 80px;
-            gap: 1px;
-            background: #f8f9fa;
-          }
-
-          .header-cell {
-            padding: 16px 12px;
-            font-weight: 600;
-            color: #495057;
-            text-align: left;
-            border-right: 1px solid #e9ecef;
-          }
-
-          .header-cell:last-child {
-            border-right: none;
-          }
-
-          .category-cell { text-align: center; }
-          .author-cell { text-align: center; }
-          .date-cell { text-align: center; }
-          .views-cell { text-align: center; }
-          .likes-cell { text-align: center; }
-
-          .table-body {
-            background: white;
-          }
-
-          .table-row {
-            display: grid;
-            grid-template-columns: 100px 1fr 120px 120px 80px 80px;
-            gap: 1px;
-            border-bottom: 1px solid #e9ecef;
-            transition: background-color 0.2s;
-          }
-
-          .table-row:hover {
-            background-color: #f8f9fa;
-          }
-
-          .table-cell {
-            padding: 16px 12px;
-            border-right: 1px solid #e9ecef;
-            display: flex;
-            align-items: center;
-          }
-
-          .table-cell:last-child {
-            border-right: none;
-          }
-
-          .category-tag {
-            background: var(--primary);
-            color: var(--primary-foreground);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 500;
-          }
-
-          .post-title-link {
-            color: #212529;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
-          }
-
-          .post-title-link:hover {
-            color: var(--primary);
-          }
-
-          .no-posts {
-            grid-column: 1 / -1;
-            padding: 40px;
-            text-align: center;
-            color: var(--muted-foreground);
-            font-size: 16px;
-          }
-        `}</style>
       </CommonLayout>
     );
   }

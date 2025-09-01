@@ -4,6 +4,7 @@ import { Mail, User, Lock, Eye, EyeOff, ArrowLeft, RefreshCw } from 'lucide-reac
 import CommonLayout from './CommonLayout';
 import { CognitoUserPool, CognitoUser, CognitoUserAttribute } from 'amazon-cognito-identity-js';
 import { userPool } from '../aws-config';
+import './SignupPage.css';
 
 class SignupPage extends Component {
   state = {
