@@ -90,6 +90,36 @@ class MyPage extends Component {
     }
   };
 
+  handleDeleteUser = async () => {
+    if (window.confirm('정말로 회원 탈퇴를 하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+        try {
+            const { currentUser, onLogout, navigate } = this.props;
+            if (!currentUser?.sub) {
+                alert('사용자 정보를 찾을 수 없습니다.');
+                return;
+            }
+
+            // Replace with your actual API endpoint for user deletion
+            const response = await fetch(`http://localhost:8081/api/v1/users/me`, {
+                method: 'DELETE',
+            });
+
+            if (response.ok) {
+                alert('회원 탈퇴가 완료되었습니다.');
+                onLogout(); // Log the user out
+                navigate('/'); // Navigate to the homepage
+            } else {
+                // If the response is not OK, try to get a more specific error message
+                const errorData = await response.json();
+                throw new Error(errorData.message || '회원 탈퇴에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('회원 탈퇴 오류:', error);
+            alert(`회원 탈퇴 중 오류가 발생했습니다: ${error.message}`);
+        }
+    }
+};
+
   render() {
     const { userInfo, userPosts, isLoading, error } = this.state;
     const { currentUser, isLoggedIn } = this.props;
@@ -240,6 +270,16 @@ class MyPage extends Component {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* 회원 탈퇴 */}
+            <div className='delete-user-section'>
+              <button 
+                className='delete-user-btn'
+                onClick={this.handleDeleteUser}
+              >
+                회원 탈퇴
+              </button>
             </div>
           </div>
         </div>

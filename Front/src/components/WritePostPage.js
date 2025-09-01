@@ -232,7 +232,7 @@ class WritePostPage extends Component {
           </div>
 
           <div className="write-post-header">
-            <h1 className="write-post-title">새 게시글 작성</h1>
+            <h1 className="write-post-title">{postId ? '게시글 수정' : '새 게시글 작성'}</h1>
             <div className="write-post-actions">
               <button
                 type="button"
