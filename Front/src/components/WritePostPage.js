@@ -68,15 +68,27 @@ class WritePostPage extends Component {
     }
   };
 
+
   handleInputChange = (field, value) => {
     this.setState({ [field]: value });
   };
 
   handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // 입력 내용 검증
+    if (!this.state.title.trim()) {
+      alert("게시글 제목을 입력해주세요.");
+      return;
+    }
 
-    if (!this.state.title.trim() || this.state.content.trim().length < 5) {
-      alert("제목을 입력하고, 내용은 최소 5자 이상 입력해주세요.");
+    if (!this.state.content.trim()) {
+      alert("게시글 내용을 입력해주세요.");
+      return;
+    }
+
+    if (this.state.content.trim().length < 5) {
+      alert("게시글은 최소 5자 이상 입력해주세요.");
       return;
     }
 
@@ -102,7 +114,6 @@ class WritePostPage extends Component {
       url = `http://localhost:8081/api/v1/posts/${postId}`;
       method = 'PATCH';
     }
-
     try {
       const response = await fetch(url, {
         method: method,
@@ -142,7 +153,7 @@ class WritePostPage extends Component {
 
   render() {
     const { isLoggedIn, currentUser, profileImage } = this.props;
-    const { title, content, category, isLoading, error, postId } = this.state;
+    const { title, content, category, isLoading, error } = this.state;
 
     // 디버깅을 위한 로그
     console.log('WritePostPage 렌더링:', { isLoggedIn, currentUser });
@@ -205,6 +216,7 @@ class WritePostPage extends Component {
         isLoggedIn={isLoggedIn}
         currentUser={currentUser}
         navigate={this.props.navigate}
+        onCategoryChange={this.handleCategoryChange}
         onLogout={this.props.onLogout}
       >
         <div className="write-post-container">
@@ -220,7 +232,7 @@ class WritePostPage extends Component {
           </div>
 
           <div className="write-post-header">
-            <h1 className="write-post-title">{postId ? '게시글 수정' : '새 게시글 작성'}</h1>
+            <h1 className="write-post-title">새 게시글 작성</h1>
             <div className="write-post-actions">
               <button
                 type="button"
