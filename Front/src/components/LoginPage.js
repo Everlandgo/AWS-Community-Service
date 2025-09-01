@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import CommonLayout from './CommonLayout';
 import "../styles/LoginPage.css"
+import { CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
+import { userPool } from '../aws-config';
+import { logSessionEvent } from '../utils/tokenUtils';
 
 class LoginPage extends Component {
   constructor(props) {
@@ -16,9 +19,21 @@ class LoginPage extends Component {
     };
   }
 
+  componentDidMount() {
+    // URL 파라미터에서 세션 만료 이유 확인
+    const urlParams = new URLSearchParams(window.location.search);
+    const reason = urlParams.get('reason');
+    
+    if (reason === 'session_expired') {
+      this.setState({
+        error: '세션이 만료되었습니다. 다시 로그인해주세요.'
+      });
+    }
+  }
+
   handleInputChange = (e) => {
     const { name, value } = e.target;
-    this.setState({ [name]: value });
+    this.setState({ [name]: value, error: null });
   };
 
   togglePasswordVisibility = () => {
@@ -38,71 +53,86 @@ class LoginPage extends Component {
     this.setState({ isLoading: true, error: null });
 
     try {
-      // AWS Cognito와 직접 연결하여 로그인
-      const cognitoResponse = await fetch('https://cognito-idp.ap-northeast-2.amazonaws.com/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-amz-json-1.1',
-          'X-Amz-Target': 'AWSCognitoIdentityProviderService.InitiateAuth'
-        },
-        body: JSON.stringify({
-          ClientId: '2v16jp80jce0c40neuuhtlgg8t',
-          UserPoolId: 'ap-northeast-2_nneGIIVuJ',
-          AuthFlow: 'USER_PASSWORD_AUTH',
-          AuthParameters: {
-            USERNAME: username,
-            PASSWORD: password
-          }
-        })
-      });
+      // AWS Cognito SDK를 사용한 로그인
+      const user = new CognitoUser({ Username: username, Pool: userPool });
+      const authDetails = new AuthenticationDetails({ Username: username, Password: password });
 
-      if (cognitoResponse.ok) {
-        const result = await cognitoResponse.json();
-        
-        if (result.AuthenticationResult) {
+      user.authenticateUser(authDetails, {
+        onSuccess: (session) => {
           // 로그인 성공
           const userData = {
             username: username,
-            sub: result.AuthenticationResult.AccessToken ? 'cognito_user_' + Date.now() : username,
+            sub: 'cognito_user_' + Date.now(),
             email: username.includes('@') ? username : `${username}@cognito.local`,
-            accessToken: result.AuthenticationResult.AccessToken,
-            id_token: result.AuthenticationResult.IdToken, // WritePostPage와 일치하도록 수정
-            refreshToken: result.AuthenticationResult.RefreshToken,
+            access_token: session.getAccessToken().getJwtToken(),
+            id_token: session.getIdToken().getJwtToken(),
+            refresh_token: session.getRefreshToken().getToken(),
             profile: {
               name: username,
               username: username
             }
           };
           
+          // sessionStorage에 토큰 저장 (통일된 키 사용)
+          const tokens = {
+            id_token: userData.id_token,
+            access_token: userData.access_token,
+            refresh_token: userData.refresh_token,
+          };
+          
+          sessionStorage.setItem('cognitoTokens', JSON.stringify(tokens));
+          
+          // 사용자 정보도 sessionStorage에 저장 (토큰 포함)
+          const currentUser = {
+            username: userData.username,
+            email: userData.email,
+            profile: userData.profile,
+            // 토큰 정보 추가 (통일된 키 사용)
+            id_token: userData.id_token,
+            access_token: userData.access_token,
+            refresh_token: userData.refresh_token,
+          };
+          sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+          
+          logSessionEvent('LOGIN_SUCCESS', { 
+            username: userData.username, 
+            storage: 'sessionStorage' 
+          });
+          
           console.log('Cognito 로그인 성공:', userData);
           this.props.onLogin(userData);
           this.props.navigate('/');
-        } else if (result.ChallengeName === 'NEW_PASSWORD_REQUIRED') {
-          this.setState({ error: '새 비밀번호를 설정해야 합니다.' });
-        } else if (result.ChallengeName === 'SMS_MFA') {
-          this.setState({ error: 'SMS 인증이 필요합니다.' });
-        } else {
-          this.setState({ error: '로그인에 실패했습니다.' });
+        },
+        onFailure: (err) => {
+          console.error('Cognito 로그인 오류:', err);
+          
+          const code = err?.code || err?.__type;
+          const map = {
+            NotAuthorizedException: '사용자 이름 또는 비밀번호가 올바르지 않습니다.',
+            UserNotConfirmedException: '계정이 확인되지 않았습니다. 이메일을 확인해주세요.',
+            UserNotFoundException: '존재하지 않는 사용자입니다.',
+            PasswordResetRequiredException: '비밀번호 재설정이 필요합니다. "비밀번호 찾기"를 이용하세요.',
+            NEW_PASSWORD_REQUIRED: '새 비밀번호가 필요합니다. 관리자에 문의하세요.',
+          };
+          
+          this.setState({
+            error: map[code] || err?.message || '로그인에 실패했습니다.',
+            isLoading: false
+          });
+        },
+        newPasswordRequired: (userAttributes, requiredAttributes) => {
+          this.setState({
+            error: '새 비밀번호를 설정해야 합니다.',
+            isLoading: false
+          });
         }
-      } else {
-        const errorData = await cognitoResponse.json();
-        console.error('Cognito 로그인 오류:', errorData);
-        
-        if (errorData.__type === 'NotAuthorizedException') {
-          this.setState({ error: '사용자 이름 또는 비밀번호가 올바르지 않습니다.' });
-        } else if (errorData.__type === 'UserNotConfirmedException') {
-          this.setState({ error: '계정이 확인되지 않았습니다. 이메일을 확인해주세요.' });
-        } else if (errorData.__type === 'UserNotFoundException') {
-          this.setState({ error: '존재하지 않는 사용자입니다.' });
-        } else {
-          this.setState({ error: `로그인 오류: ${errorData.message || '알 수 없는 오류'}` });
-        }
-      }
+      });
     } catch (error) {
       console.error('로그인 오류:', error);
-      this.setState({ error: '네트워크 오류가 발생했습니다.' });
-    } finally {
-      this.setState({ isLoading: false });
+      this.setState({ 
+        error: '로그인 처리 중 오류가 발생했습니다.',
+        isLoading: false 
+      });
     }
   };
 
@@ -186,6 +216,14 @@ class LoginPage extends Component {
                   className="auth-link"
                 >
                   회원가입하기
+                </button>
+              </p>
+              <p>
+                <button 
+                  onClick={() => this.props.navigate('/forgot-password')} 
+                  className="auth-link"
+                >
+                  비밀번호 찾기
                 </button>
               </p>
             </div>

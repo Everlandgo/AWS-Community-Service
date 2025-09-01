@@ -9,6 +9,12 @@ class Config:
     # 보안 키 (운영 환경에서는 반드시 환경 변수로 설정)
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     
+    # 세션 설정 - 탭 종료 시 자동 로그아웃을 위해 False로 설정
+    SESSION_PERMANENT = False
+    SESSION_COOKIE_SECURE = False  # 개발 환경에서는 False, 운영 환경에서는 True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    
     # 데이터베이스 연결 (MySQL 우선, SQLite 폴백)
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///post_service.db'

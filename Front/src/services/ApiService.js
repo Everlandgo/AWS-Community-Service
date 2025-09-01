@@ -81,11 +81,11 @@ class ApiService {
         // Post Service와 Comment Service는 별도 로그아웃이 없으므로 토큰만 제거
       ]);
 
-      // 로컬 스토리지 정리
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('backendAccessToken');
-      localStorage.removeItem('idToken');
-      localStorage.removeItem('refreshToken');
+      // 세션 스토리지 정리
+      sessionStorage.removeItem('accessToken');
+      sessionStorage.removeItem('backendAccessToken');
+      sessionStorage.removeItem('idToken');
+      sessionStorage.removeItem('refreshToken');
 
       return true;
     } catch (error) {

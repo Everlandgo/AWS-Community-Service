@@ -24,13 +24,13 @@ bp = Blueprint('api', __name__, url_prefix='/api/v1')
 # AWS Cognito 설정
 cognito_client = boto3.client(
     'cognito-idp',
-    region_name='ap-northeast-2',
+    region_name=os.environ.get('COGNITO_REGION'),
     aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
     aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
 )
 
-USER_POOL_ID = 'ap-northeast-2_nneGIIVuJ'
-CLIENT_ID = '2v16jp80jce0c40neuuhtlgg8t'
+USER_POOL_ID = os.environ.get('COGNITO_USER_POOL_ID')
+CLIENT_ID = os.environ.get('COGNITO_CLIENT_ID')
 
 # ============================================================================
 # 유틸리티 함수들

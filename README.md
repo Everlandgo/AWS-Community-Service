@@ -20,15 +20,30 @@ git checkout Combined_repo_Ju
 프로젝트 루트에 `.env` 파일을 생성하고 다음 내용을 추가하세요:
 
 ```env
-# AWS 자격 증명 (MinIO 사용 시)
 # AWS Cognito 설정
-REACT_APP_COGNITO_USER_POOL_ID=
-REACT_APP_COGNITO_CLIENT_ID=
+REACT_APP_COGNITO_USER_POOL_ID=ap-northeast-2_nneGIIVuJ
+REACT_APP_COGNITO_CLIENT_ID=2v16jp80jce0c40neuuhtlgg8t
 REACT_APP_COGNITO_REGION=ap-northeast-2
 
+# 백엔드 서비스 Cognito 설정
+COGNITO_USER_POOL_ID=ap-northeast-2_nneGIIVuJ
+COGNITO_CLIENT_ID=2v16jp80jce0c40neuuhtlgg8t
+COGNITO_REGION=ap-northeast-2
+
 # 백엔드 API 설정
-REACT_APP_API_BASE_URL=http://localhost:5000
+REACT_APP_API_BASE_URL=http://localhost:8081
 REACT_APP_COMMENT_SERVICE_URL=http://localhost:8083
+
+# AWS 자격 증명 (MinIO 사용 시)
+AWS_ACCESS_KEY_ID=minioadmin
+AWS_SECRET_ACCESS_KEY=minioadmin
+AWS_DEFAULT_REGION=ap-northeast-2
+
+# 데이터베이스 설정
+MYSQL_ROOT_PASSWORD=rootpass
+MYSQL_DATABASE=communitydb
+MYSQL_USER=postuser
+MYSQL_PASSWORD=postpass
 ```
 
 ### 3. Docker Compose로 실행

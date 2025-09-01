@@ -8,7 +8,7 @@ def get_cognito_public_keys(user_pool_id):
     """Cognito User Pool의 공개키를 가져옵니다."""
     try:
         # Cognito JWKS 엔드포인트
-        jwks_url = f"https://cognito-idp.ap-northeast-2.amazonaws.com/{user_pool_id}/.well-known/jwks.json"
+        jwks_url = f"https://cognito-idp.{os.environ.get('COGNITO_REGION')}.amazonaws.com/{user_pool_id}/.well-known/jwks.json"
         response = requests.get(jwks_url)
         response.raise_for_status()
         return response.json()
@@ -46,8 +46,8 @@ def verify_cognito_token(token, user_pool_id):
             token,
             public_key,
             algorithms=['RS256'],
-            audience='2v16jp80jce0c40neuuhtlgg8t',  # Client ID
-            issuer=f'https://cognito-idp.ap-northeast-2.amazonaws.com/{user_pool_id}'
+            audience=os.environ.get('COGNITO_CLIENT_ID'),  # Client ID
+            issuer=f'https://cognito-idp.{os.environ.get("COGNITO_REGION")}.amazonaws.com/{user_pool_id}'
         )
         
         return decoded, None
@@ -75,7 +75,7 @@ def jwt_required(f):
             return jsonify({'error': '토큰이 없습니다.'}), 401
         
         # Cognito User Pool ID
-        user_pool_id = 'ap-northeast-2_nneGIIVuJ'
+        user_pool_id = os.environ.get('COGNITO_USER_POOL_ID')
         
         # 토큰 검증
         decoded_token, error = verify_cognito_token(token, user_pool_id)

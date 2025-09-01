@@ -5,11 +5,9 @@ class UserService {
 
   // 인증 헤더 생성
   getAuthHeaders() {
-    const accessToken = localStorage.getItem('accessToken');
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`
-    };
+    // 공통 토큰 유틸리티 사용
+    const { createAuthHeaders } = require('../utils/tokenUtils');
+    return createAuthHeaders();
   }
 
   // 회원가입
@@ -53,7 +51,7 @@ class UserService {
       
       // 백엔드 토큰 저장
       if (data.accessToken) {
-        localStorage.setItem('backendAccessToken', data.accessToken);
+        sessionStorage.setItem('backendAccessToken', data.accessToken);
       }
 
       return data;
@@ -72,7 +70,7 @@ class UserService {
       });
 
       if (response.ok) {
-        localStorage.removeItem('backendAccessToken');
+        sessionStorage.removeItem('backendAccessToken');
       }
 
       return response.ok;
@@ -150,7 +148,7 @@ class UserService {
       });
 
       if (response.ok) {
-        localStorage.removeItem('backendAccessToken');
+        sessionStorage.removeItem('backendAccessToken');
       }
 
       return response.ok;
