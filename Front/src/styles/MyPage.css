@@ -193,9 +193,10 @@
 }
 
 .my-table-cell {
-  padding: 16px 16px;
   display: flex; /* Use flexbox to center content vertically */
   align-items: center;
+  height: 36px;
+  padding: 16px 16px;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
   overflow: hidden;

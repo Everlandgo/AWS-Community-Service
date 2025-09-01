@@ -196,6 +196,7 @@
   border-radius: var(--radius);
   background-color: var(--dark-navy);
   color: var(--white-shine);
+  cursor: pointer;
 }
 
 /* ===== 메인 콘텐츠 영역 ===== */

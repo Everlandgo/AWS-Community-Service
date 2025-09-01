@@ -162,6 +162,8 @@ class WritePostPage extends Component {
         isLoggedIn={isLoggedIn}
         currentUser={currentUser}
         navigate={this.props.navigate}
+        onCategoryChange={this.handleCategoryChange}
+        onLogout={this.props.onLogout}
       >
         <div className="write-post-container">
           {/* 뒤로가기 버튼 */}
