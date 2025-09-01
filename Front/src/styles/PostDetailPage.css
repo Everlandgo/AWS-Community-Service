@@ -150,6 +150,14 @@
   cursor: pointer;
 }
 
+.like-button svg {
+  color: gray;
+}
+
+.like-button.liked svg {
+  color: red;
+}
+
 /* Comment Section */
 .comments-section {
   display: flex;
@@ -183,14 +191,16 @@
 
 .comment-input {
   flex-grow: 1;
+  height: fit-content;
   border: 1px solid var(--input);
   border-radius: 400px;
   padding: 16px 24px;
-  align-items: center;
+  align-content: center;
   font-size: 14px;
   background-color: var(--white-shadow);
   color: var(--text-default);
   box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1);
+  resize: none;
 }
 
 .comment-input::placeholder {

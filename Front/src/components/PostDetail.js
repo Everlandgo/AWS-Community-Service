@@ -245,10 +245,11 @@ class PostDetail extends Component {
         isLoggedIn={isLoggedIn}
         currentUser={currentUser}
         navigate={this.props.navigate}
-        activeCategory={post.category || '전체'}
+        activeCategory={post.category || 'ALL'}
         onCategoryChange={(category) => {
           this.props.navigate(`/?category=${encodeURIComponent(category)}`);
         }}
+        onLogout={this.props.onLogout}
       >
         {/* 뒤로가기 버튼 */}
         <div className="back-button-container">
@@ -266,6 +267,7 @@ class PostDetail extends Component {
           {/* 맨 위: 카테고리 */}
           <div className="post-category-header">
             <span className="category-tag">{post.category || '미분류'}</span>
+            {/* 게시글 수정 및 삭제 버튼 추가 예정 */}
           </div>
 
           {/* 제목과 작성시간 */}
@@ -306,9 +308,7 @@ class PostDetail extends Component {
               onClick={this.handleLikeToggle}
             >
               <Heart size={20} />
-              {isLiked ? '좋아요 취소' : '좋아요'}
             </button>
-            <span className="like-count">좋아요 {post.like_count || 0}</span>
           </div>
         </article>
 
@@ -322,7 +322,7 @@ class PostDetail extends Component {
               value={newComment}
               onChange={this.handleCommentChange}
               placeholder="댓글을 입력하세요..."
-              rows="3"
+              rows="1"
             />
             <button type="submit" className="comment-submit-btn">작성</button>
           </form>

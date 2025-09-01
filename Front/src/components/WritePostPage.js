@@ -10,11 +10,11 @@ class WritePostPage extends Component {
     this.state = {
       title: "",
       content: "",
-      category: "전체",
+      category: "자유",
       isLoading: false,
       error: null
     };
-    this.categories = ["전체", "동물/반려동물", "여행", "건강/헬스", "연예인"];
+    this.categories = ["자유", "동물/반려동물", "여행", "건강/헬스", "연예인"];
   }
 
   handleInputChange = (field, value) => {
