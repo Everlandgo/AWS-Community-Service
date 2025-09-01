@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { User, Mail, Calendar, ArrowLeft, Edit, Trash2, Eye, Heart, MessageCircle } from 'lucide-react';
 import CommonLayout from './CommonLayout';
 import "../styles/MyPage.css"
+import UserService from '../services/UserService';
+import { clearExpiredTokens } from '../utils/tokenUtils';
 
 class MyPage extends Component {
   constructor(props) {
