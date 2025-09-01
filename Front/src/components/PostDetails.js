@@ -449,9 +449,7 @@ class PostDetails extends Component {
               onClick={this.handleLikeToggle}
             >
               <Heart size={20} />
-              {isLiked ? '좋아요 취소' : '좋아요'}
             </button>
-            <span className="like-count">좋아요 {post.like_count || 0}</span>
           </div>
         </article>
 
@@ -497,7 +495,7 @@ class PostDetails extends Component {
                     <div className="comment-editing">
                       <textarea
                         className="comment-edit-input"
-                        rows="3"
+                        rows="1"
                         value={this.state.editingContent}
                         onChange={this.handleEditChange}
                       />
@@ -516,21 +514,20 @@ class PostDetails extends Component {
                     <div className="comment-like">
                       <button
                         type="button"
-                        className={`comment-like-btn ${this.state.commentLikeStatus[comment.id] ? 'liked' : ''}`}
+                        className={`like-btn ${this.state.commentLikeStatus[comment.id] ? 'liked' : ''}`}
                         onClick={() => this.handleCommentLikeToggle(comment.id)}
                         disabled={!isLoggedIn}
                         title={!isLoggedIn ? '로그인이 필요합니다' : ''}
                       >
-                        <Heart size={16} /> {this.state.commentLikeStatus[comment.id] ? '좋아요 취소' : '좋아요'}
+                        <Heart size={16} /> 
                       </button>
-                      <span className="comment-like-count">좋아요 {comment.like_count || 0}</span>
                     </div>
-                    
-                                         {isLoggedIn && this.isOwner(comment) && this.state.editingCommentId !== comment.id && (
-                       <div className="comment-owner-actions">
-                         <button type="button" className="comment-btn" onClick={() => this.handleStartEdit(comment)}>수정</button>
-                         <button type="button" className="comment-btn" onClick={() => this.handleDelete(comment.id)}>삭제</button>
-                       </div>
+  
+                      {isLoggedIn && this.isOwner(comment) && this.state.editingCommentId !== comment.id && (
+                      <div className="comment-owner-actions">
+                        <button type="button" className="comment-btn" onClick={() => this.handleStartEdit(comment)}>수정</button>
+                        <button type="button" className="comment-btn" onClick={() => this.handleDelete(comment.id)}>삭제</button>
+                      </div>
                      )}
                   </div>
                 </div>
