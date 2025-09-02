@@ -20,7 +20,6 @@ class MainBoardPage extends Component {
 
   componentDidMount() {
     this.loadPosts();
-    // URL 파라미터에서 카테고리 확인
     this.checkUrlCategory();
   }
 
@@ -106,7 +105,7 @@ class MainBoardPage extends Component {
       filtered = filtered.filter(post => 
         post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         post.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.author?.toLowerCase().includes(searchTerm.toLowerCase())
+        post.username?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -120,16 +119,17 @@ class MainBoardPage extends Component {
   };
 
   sortPosts = (sortType) => {
-    const { filteredPosts } = this.state;
-    let sorted = [...filteredPosts];
-
-    if (sortType === "최신순") {
-      sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    } else if (sortType === "인기순") {
-      sorted.sort((a, b) => (b.like_count || 0) - (a.like_count || 0));
+    let sortedPosts = [...this.state.filteredPosts];
+    
+    if (sortType === '인기순') {
+      // 인기순: 좋아요 수 내림차순
+      sortedPosts.sort((a, b) => b.like_count - a.like_count);
+    } else {
+      // 최신순: 생성일 내림차순
+      sortedPosts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     }
-
-    this.setState({ filteredPosts: sorted });
+    
+    this.setState({ filteredPosts: sortedPosts });
   };
 
   handleWritePost = () => {
@@ -210,9 +210,12 @@ class MainBoardPage extends Component {
                   <div className="table-cell title-cell">
                     <a href={`/post/${post.id}`} className="post-title-link">
                       {post.title}
+                      {post.comment_count > 0 && (
+                        <span className="comment-count"> ({post.comment_count})</span>
+                      )}
                     </a>
                   </div>
-                  <div className="table-cell author-cell">{post.author}</div>
+                  <div className="table-cell author-cell">{post.username}</div>
                   <div className="table-cell date-cell">
                     {new Date(post.created_at).toLocaleDateString('ko-KR')}
                   </div>

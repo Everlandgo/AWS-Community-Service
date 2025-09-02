@@ -40,6 +40,60 @@ class PostDetail extends Component {
     }
   }
 
+  // 현재 사용자 sub 추출 (추가됨)
+  getCurrentUserSub = () => {
+    // JWT 토큰에서 실제 sub 값 추출 (더 안전한 방법)
+    try {
+      if (this.props.currentUser?.access_token) {
+        const token = this.props.currentUser.access_token;
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const payload = JSON.parse(window.atob(base64));
+        
+        return payload.sub || this.props.currentUser?.sub || null;
+      }
+    } catch (error) {
+      console.warn('JWT 토큰 파싱 실패:', error);
+    }
+    
+    // 폴백: 기존 방식
+    return this.props.currentUser?.sub || null;
+  };
+
+  // 게시글 소유자 여부 (추가됨)
+  isPostOwner = () => {
+    const currentUserSub = this.getCurrentUserSub();
+    const { post } = this.state;
+    return currentUserSub && post?.user_id && currentUserSub === post.user_id;
+  };
+
+  // 게시글 삭제 (추가됨)
+  handleDeletePost = async (postId) => {
+    if (!window.confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8081/api/v1/posts/${postId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        alert('게시글이 성공적으로 삭제되었습니다.');
+        this.props.navigate('/'); // 메인 페이지로 이동
+      } else {
+        const errorData = await response.json();
+        alert(`삭제 실패: ${errorData.message || '알 수 없는 오류가 발생했습니다.'}`);
+      }
+    } catch (error) {
+      console.error('게시글 삭제 중 오류:', error);
+      alert('게시글 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
   // 좋아요 상태 확인
   checkLikeStatus = async () => {
     if (!this.state.post || !this.props.isLoggedIn || !this.props.currentUser?.sub) return;
@@ -264,10 +318,26 @@ class PostDetail extends Component {
 
         {/* 게시글 상세 내용 */}
         <article className="post-detail-card">
-          {/* 맨 위: 카테고리 */}
+          {/* 맨 위: 카테고리와 수정/삭제 버튼 */}
           <div className="post-category-header">
             <span className="category-tag">{post.category || '미분류'}</span>
-            {/* 게시글 수정 및 삭제 버튼 추가 예정 */}
+            {/* 게시글 작성자만 수정/삭제 버튼 표시 (추가됨) */}
+            {this.isPostOwner() && (
+              <div className="post-action-buttons">
+                <button 
+                  className="edit-button"
+                  onClick={() => this.props.navigate(`/write?edit=${post.id}`)}
+                >
+                  수정
+                </button>
+                <button 
+                  className="delete-button"
+                  onClick={() => this.handleDeletePost(post.id)}
+                >
+                  삭제
+                </button>
+              </div>
+            )}
           </div>
 
           {/* 제목과 작성시간 */}
@@ -287,7 +357,7 @@ class PostDetail extends Component {
           {/* 닉네임과 통계 정보 */}
           <div className="post-meta-section">
             <div className="post-author">
-              {post.author || 'Anonymous'}
+              {post.username || 'Anonymous'}
             </div>
             <div className="post-stats">
               <span className="stat-item">조회수 {post.view_count || 0}</span>
@@ -335,7 +405,7 @@ class PostDetail extends Component {
                   <div className="comment-meta">
                     <span className="comment-author">
                       <User size={14} style={{ marginRight: '4px' }} />
-                      {comment.author || 'Anonymous'}
+                      {comment.username || 'Anonymous'}
                     </span>
                     <span className="comment-date">
                       {new Date(comment.created_at).toLocaleString('ko-KR', {

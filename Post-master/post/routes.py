@@ -6,10 +6,10 @@ MSA 환경에서 독립적으로 동작하는 Post 서비스 API입니다.
 import boto3
 import os
 from flask import Blueprint, request, jsonify, abort, current_app
-from .models import db, Post, Like, Category, User
-from .services import PostService
+from .models import db, Post, Like, Category, kst_now, PostStatus
+from .services import PostService, CategoryService
 from .validators import PostValidator
-# from .utils import jwt_required  # 임시로 주석 처리
+from .auth_utils import jwt_required
 import uuid
 import requests
 import json
@@ -45,43 +45,7 @@ def get_config():
         'ENVIRONMENT': current_app.config.get('ENVIRONMENT', 'development')
     }
 
-def call_user_service(endpoint, method="GET", data=None, headers=None):
-    """User 서비스 호출 (MSA 통신)"""
-    try:
-        config = get_config()
-        url = f"{config['USER_SERVICE_URL']}{endpoint}"
-        
-        if method == "GET":
-            response = requests.get(url, headers=headers, timeout=5)
-        elif method == "POST":
-            response = requests.post(url, json=data, headers=headers, timeout=5)
-        elif method == "PUT":
-            response = requests.put(url, json=data, headers=headers, timeout=5)
-        elif method == "DELETE":
-            response = requests.delete(url, headers=headers, timeout=5)
-        
-        if response.status_code == 200:
-            return response.json()
-        else:
-            current_app.logger.warning(f"User service call failed: {response.status_code}")
-            return None
-            
-    except requests.exceptions.RequestException as e:
-        current_app.logger.error(f"User service connection error: {str(e)}")
-        return None
 
-def validate_user_exists(user_id):
-    """사용자 존재 여부 확인 (개발 환경에서는 검증 건너뛰기)"""
-    if get_config()['ENVIRONMENT'] == 'development':
-        current_app.logger.info("Development mode: Skipping user validation")
-        return True
-    
-    try:
-        user_info = call_user_service(f"/api/users/{user_id}")
-        return user_info is not None
-    except Exception as e:
-        current_app.logger.error(f"User service validation failed: {str(e)}")
-        return False
 
 def notify_user_activity(user_id, activity_type, data):
     """사용자 활동 알림 (개발 환경에서는 알림 건너뛰기)"""
@@ -114,6 +78,25 @@ def notify_user_activity(user_id, activity_type, data):
 def generate_id():
     """32자리 UUID 생성"""
     return str(uuid.uuid4()).replace('-', '')
+
+def get_or_create_category(category_name):
+    """카테고리 이름으로 카테고리를 조회하거나 생성"""
+    try:
+        # 기존 카테고리 조회
+        category = Category.query.filter_by(name=category_name).first()
+        
+        if not category:
+            # 카테고리가 없으면 새로 생성
+            category = Category(name=category_name)
+            db.session.add(category)
+            db.session.commit()
+            current_app.logger.info(f"새 카테고리 생성: {category_name}")
+        
+        return category
+    except Exception as e:
+        current_app.logger.error(f"카테고리 처리 중 오류: {str(e)}")
+        db.session.rollback()
+        return None
 
 def allowed_file(filename):
     """허용된 이미지 파일 형식 확인"""
@@ -250,48 +233,40 @@ def list_posts():
         page = int(request.args.get('page', 1))
         per_page = min(int(request.args.get('per_page', 10)), 50)
         q = request.args.get('q', '').strip()
-        visibility = request.args.get('visibility', 'PUBLIC')
-        status = request.args.get('status', None)  # 기본값 제거하여 모든 상태 조회
         category_id = request.args.get('category_id', None)  # 카테고리 필터
+        user_id = request.args.get('user_id', None)  # 사용자별 필터 (추가됨)
         sort = request.args.get('sort', 'latest')  # 정렬 방식 (latest: 최신순, popular: 인기순)
 
-        query = Post.query.filter_by(visibility=visibility)
-        if status:
-            query = query.filter_by(status=status)
+        query = Post.query.filter_by(status=PostStatus.visible)  # visible 상태만 조회 (추가됨)
         if category_id:
             query = query.filter_by(category_id=category_id)
+        if user_id:  # 사용자별 필터링 (추가됨)
+            query = query.filter_by(user_id=user_id)
         
         if q:
             # SQLite에서는 LIKE 검색 사용
             query = query.filter(
-                db.or_(
-                    Post.title.like(f'%{q}%'),
-                    Post.content_md.like(f'%{q}%')
-                )
+                Post.title.like(f'%{q}%')
             )
 
         # 정렬 적용
         if sort == 'popular':
-            query = query.order_by(Post.like_count.desc(), Post.created_at.desc())
+            query = query.order_by(Post.like_count.desc(), Post.view_count.desc(), Post.created_at.desc())  # 좋아요 → 조회수 → 생성시간 (추가됨)
         else:  # latest (기본값)
-            query = query.order_by(Post.created_at.desc())
+            query = query.order_by(Post.No.desc())  # No 컬럼 기준으로 변경 (추가됨)
 
         pagination = query.paginate(page=page, per_page=per_page, error_out=False)
         
         items = [{
             "id": p.id,
             "title": p.title,
-            "content": p.content,  # content 필드 추가
-            "content_md": p.content_md,
-            "content_s3url": p.content_s3url,
-            "author": p.author,  # author 필드 추가
-            "author_id": p.author_id,
-            "category": p.category,  # 카테고리 이름 (문자열)
-            "visibility": p.visibility,
-            "status": p.status,
+            "content": p.content,
+            "username": p.username,
+            "user_id": p.user_id,
+            "category": p.category,
             "view_count": p.view_count,
             "like_count": p.like_count,
-            "comment_count": p.comment_count,
+            "comment_count": p.comment_count,  # 데이터베이스의 댓글 수 사용 (추가됨)
             "created_at": p.created_at.isoformat(),
             "updated_at": p.updated_at.isoformat() if p.updated_at else None
         } for p in pagination.items]
@@ -350,7 +325,7 @@ def get_post(post_id):
         description: 게시글을 찾을 수 없음
     """
     try:
-        post = Post.query.get(post_id)
+        post = Post.query.filter_by(id=post_id, status='visible').first()  # visible 상태만 조회 (추가됨)
         if not post:
             return api_error("게시글을 찾을 수 없습니다", 404)
             
@@ -365,17 +340,13 @@ def get_post(post_id):
         data = {
             "id": post.id,
             "title": post.title,
-            "content": post.content,  # content 필드 추가
-            "content_md": post.content_md,
-            "content_s3url": post.content_s3url,
-            "author": post.author,  # author 필드 추가
-            "author_id": post.author_id,
-            "category": post.category,  # 카테고리 이름 (문자열)
-            "visibility": post.visibility,
-            "status": post.status,
+            "content": post.content,
+            "username": post.username,
+            "user_id": post.user_id,
+            "category": post.category,
             "view_count": post.view_count,
             "like_count": post.like_count,
-            "comment_count": post.comment_count,
+            "comment_count": post.comment_count,  # 데이터베이스의 댓글 수 사용 (추가됨)
             "created_at": post.created_at.isoformat(),
             "updated_at": post.updated_at.isoformat() if post.updated_at else None
         }
@@ -391,9 +362,9 @@ def get_post(post_id):
 
 
 @bp.route('/posts', methods=['POST'])
-# @jwt_required  # 임시로 주석 처리
+@jwt_required
 def create_post():
-    """게시글 작성 - 임시로 인증 없이 가능"""
+    """게시글 작성"""
     try:
         data = request.get_json()
         
@@ -406,15 +377,41 @@ def create_post():
             if not data.get(field):
                 return jsonify({'error': f'{field} 필드가 필요합니다.'}), 400
         
-        # 사용자 정보 (임시로 요청에서 추출)
-        username = data.get('author', 'Anonymous')
+        # JWT 토큰에서 사용자 정보 추출 (임시로 비활성화된 경우 대비)
+        current_user = getattr(request, 'current_user', None)
+        if current_user:
+            user_sub = current_user.get("sub")
+            user_name = current_user.get("cognito:username") or current_user.get("username") or "Anonymous"
+        else:
+            # JWT 검증이 비활성화된 경우 요청 데이터에서 사용자 정보 추출
+            user_sub = data.get('user_id', 'anonymous_user')
+            user_name = data.get('username', 'Anonymous')
+        
+        # user_sub가 없으면 에러
+        if not user_sub:
+            current_app.logger.error(f"사용자 sub 정보가 없음: {current_user}")
+            return jsonify({'error': '사용자 정보를 확인할 수 없습니다.'}), 400
+        
+        # 카테고리 처리
+        category_name = data['category']
+        category = get_or_create_category(category_name)
+        if not category:
+            return jsonify({'error': '카테고리 처리 중 오류가 발생했습니다.'}), 500
+        
+        # 다음 No 값 계산
+        from sqlalchemy import func
+        max_no = db.session.query(func.max(Post.No)).scalar()
+        next_no = (max_no or 0) + 1
         
         # 게시글 생성
         new_post = Post(
             title=data['title'],
             content=data['content'],
-            author=username,
-            category=data['category']
+            username=user_name,
+            user_id=user_sub,
+            category=category_name,
+            category_id=category.id,
+            No=next_no
         )
         
         db.session.add(new_post)
@@ -428,7 +425,7 @@ def create_post():
                 'id': new_post.id,
                 'title': new_post.title,
                 'content': new_post.content,
-                'author': new_post.author,
+                'username': new_post.username,
                 'category': new_post.category,
                 'created_at': new_post.created_at.isoformat() if new_post.created_at else None
             }
@@ -464,7 +461,7 @@ def update_post(post_id):
               type: string
             content_s3url:
               type: string
-            author_id:
+            user_id:
               type: string
             visibility:
               type: string
@@ -479,42 +476,32 @@ def update_post(post_id):
         description: 게시글을 찾을 수 없음
     """
     try:
-        post = Post.query.get(post_id)
+        post = Post.query.filter_by(id=post_id, status='visible').first()  # visible 상태만 조회 (추가됨)
         if not post:
             return api_error("게시글을 찾을 수 없습니다", 404)
         data = request.get_json(force=True, silent=False)
 
         if request.method == 'PUT':
             title = (data.get('title') or '').strip()
-            content_md = (data.get('content_md') or '').strip()
-            content_s3url = data.get('content_s3url', '').strip()
-            author_id = data.get('author_id')
-            visibility = data.get('visibility', 'PUBLIC')
-            status = data.get('status', 'DRAFT')
+            content = (data.get('content') or '').strip()
+            user_id = data.get('user_id')
             
-            if not title or not author_id:
-                return api_error("제목과 작성자 ID는 필수입니다", 400)
+            if not title or not content or not user_id:
+                return api_error("제목, 내용, 작성자 ID는 필수입니다", 400)
                 
             post.title = title
-            post.content_md = content_md if content_md else None
-            post.content_s3url = content_s3url if content_s3url else None
-            post.author_id = author_id
-            post.visibility = visibility
-            post.status = status
+            post.content = content
+            post.user_id = user_id
         else:
             if 'title' in data:
                 post.title = (data['title'] or '').strip()
-            if 'content_md' in data:
-                post.content_md = (data['content_md'] or '').strip()
-            if 'content_s3url' in data:
-                post.content_s3url = (data['content_s3url'] or '').strip()
-            if 'author_id' in data:
-                post.author_id = data['author_id']
-            if 'visibility' in data:
-                post.visibility = data['visibility']
-            if 'status' in data:
-                post.status = data['status']
+            if 'content' in data:
+                post.content = (data['content'] or '').strip()
+            if 'user_id' in data:
+                post.user_id = data['user_id']
 
+        # 게시글 내용이 수정되었을 때만 updated_at 업데이트 (추가됨)
+        post.updated_at = kst_now()
         db.session.commit()
         return api_response(message="게시글이 성공적으로 수정되었습니다")
         
@@ -543,10 +530,13 @@ def delete_post(post_id):
         description: 게시글을 찾을 수 없음
     """
     try:
-        post = Post.query.get(post_id)
+        post = Post.query.filter_by(id=post_id, status='visible').first()  # visible 상태만 조회 (추가됨)
         if not post:
             return api_error("게시글을 찾을 수 없습니다", 404)
-        post.status = 'DELETED'
+        
+        # Soft Delete: status를 'deleted'로 변경 (추가됨)
+        post.status = 'deleted'
+        post.updated_at = kst_now()
         db.session.commit()
         return api_response(message="게시글이 성공적으로 삭제되었습니다")
         
@@ -594,7 +584,7 @@ def like_post(post_id):
     try:
         current_app.logger.info(f"좋아요 요청 - post_id: {post_id}")
         
-        post = Post.query.get(post_id)
+        post = Post.query.filter_by(id=post_id, status='visible').first()  # visible 상태만 조회 (추가됨)
         if not post:
             current_app.logger.warning(f"게시글을 찾을 수 없습니다: {post_id}")
             return api_error("게시글을 찾을 수 없습니다", 404)
@@ -658,7 +648,7 @@ def list_categories():
         items = [{
             "id": c.id,
             "name": c.name,
-            "description": c.description,
+
             "created_at": c.created_at.isoformat()
         } for c in categories]
         
@@ -687,9 +677,7 @@ def create_category():
             name:
               type: string
               description: 카테고리 이름
-            description:
-              type: string
-              description: 카테고리 설명
+
     responses:
       201:
         description: 카테고리 생성 성공
@@ -709,8 +697,7 @@ def create_category():
             return api_error("이미 존재하는 카테고리입니다", 400)
         
         category = Category(
-            name=name,
-            description=data.get('description', '')
+            name=name
         )
         db.session.add(category)
         db.session.commit()
@@ -718,7 +705,7 @@ def create_category():
         return api_response(data={
             "id": category.id,
             "name": category.name,
-            "description": category.description
+
         }, message="카테고리가 생성되었습니다")
         
     except Exception as e:
@@ -726,304 +713,25 @@ def create_category():
         current_app.logger.error(f"Error in create_category: {str(e)}")
         return api_error("카테고리 생성 중 오류가 발생했습니다", 500)
 
-# ============================================================================
-# 태그 API
-# ============================================================================
 
-@bp.route('/tags', methods=['GET'])
-def list_tags():
-    """
-    태그 목록 조회
-    ---
-    tags:
-      - Tags
-    responses:
-      200:
-        description: 태그 목록 조회 성공
-        schema:
-          type: object
-          properties:
-            success:
-              type: boolean
-            message:
-              type: string
-            data:
-              type: array
-              items:
-                $ref: '#/definitions/Tag'
-    """
-    try:
-        tags = Tag.query.all()
-        data = [{"id": t.id, "name": t.name} for t in tags]
-        return api_response(data=data)
-        
-    except Exception as e:
-        current_app.logger.error(f"Error in list_tags: {str(e)}")
-        return api_error("태그 목록 조회 중 오류가 발생했습니다", 500)
 
-@bp.route('/tags', methods=['POST'])
-def create_tag():
-    """
-    새 태그 생성
-    ---
-    tags:
-      - Tags
-    parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          required:
-            - name
-          properties:
-            name:
-              type: string
-              description: 태그 이름
-    responses:
-      201:
-        description: 태그 생성 성공
-      400:
-        description: 잘못된 요청 데이터
-    """
-    try:
-        data = request.get_json(force=True, silent=False)
-        name = (data.get('name') or '').strip()
-        
-        if not name:
-            return api_error("태그 이름은 필수입니다", 400)
-        
-        tag = Tag(name=name)
-        db.session.add(tag)
-        db.session.commit()
-        
-        return api_response(
-            data={"id": tag.id, "name": tag.name}, 
-            message="태그가 성공적으로 생성되었습니다", 
-            status_code=201
-        )
-        
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"Error in create_tag: {str(e)}")
-        return api_error("태그 생성 중 오류가 발생했습니다", 500)
+
+
+
 
 # ============================================================================
 # 이미지 관리 API
 # ============================================================================
 
-# ============================================================================
-# User API (사용자 등록 및 인증)
-# ============================================================================
 
-@bp.route('/users/register', methods=['POST'])
-def register_user():
-    """사용자 회원가입 - Cognito에서 처리하도록 안내"""
-    try:
-        data = request.get_json()
-        
-        if not data:
-            return jsonify({'error': '요청 데이터가 없습니다.'}), 400
-        
-        # 필수 필드 검증
-        required_fields = ['username', 'email', 'password']
-        for field in required_fields:
-            if not data.get(field):
-                return jsonify({'error': f'{field} 필드가 필요합니다.'}), 400
-        
-        username = data['username']
-        email = data['email']
-        password = data['password']
-        phone = data.get('phone', '')
-        
-        # 기존 사용자 확인 (로컬 DB)
-        existing_user = User.query.filter(
-            (User.username == username) | (User.email == email)
-        ).first()
-        
-        if existing_user:
-            if existing_user.username == username:
-                return jsonify({'error': '이미 사용 중인 아이디입니다.'}), 409
-            else:
-                return jsonify({'error': '이미 사용 중인 이메일입니다.'}), 409
-        
-        # 로컬 DB에 사용자 정보 저장 (Cognito와 동기화용)
-        new_user = User(
-            username=username,
-            email=email,
-            phone=phone
-        )
-        new_user.set_password(password)
-        
-        db.session.add(new_user)
-        db.session.commit()
-        
-        # 성공 응답 - Cognito에서 계정 생성 안내
-        return jsonify({
-            'message': '회원가입이 완료되었습니다.',
-            'user_id': new_user.id,
-            'next_step': 'Cognito에서 동일한 계정으로 로그인해주세요.'
-        }), 201
-            
-    except Exception as e:
-        current_app.logger.error(f'회원가입 처리 중 오류: {str(e)}')
-        return jsonify({'error': '서버 오류가 발생했습니다.'}), 500
 
-@bp.route('/users/login', methods=['POST'])
-def login_user():
-    """
-    사용자 로그인
-    ---
-    tags:
-      - Users
-    parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          required:
-            - username
-            - password
-          properties:
-            username:
-              type: string
-              description: 사용자명 또는 이메일
-            password:
-              type: string
-              description: 비밀번호
-    responses:
-      200:
-        description: 로그인 성공
-      400:
-        description: 잘못된 요청 데이터
-      401:
-        description: 인증 실패
-    """
-    try:
-        data = request.get_json(force=True, silent=False)
-        
-        username_or_email = (data.get('username') or '').strip()
-        password = data.get('password', '')
-        
-        if not username_or_email or not password:
-            return api_error("사용자명과 비밀번호를 입력해주세요", 400)
-        
-        # 사용자명 또는 이메일로 사용자 찾기
-        user = User.query.filter(
-            (User.username == username_or_email) | (User.email == username_or_email)
-        ).first()
-        
-        if not user or not user.check_password(password):
-            return api_error("사용자명 또는 비밀번호가 올바르지 않습니다", 401)
-        
-        if not user.is_active:
-            return api_error("비활성화된 계정입니다", 401)
-        
-        # 로그인 성공 - 사용자 정보 반환
-        user_data = user.to_dict()
-        
-        return api_response(
-            data=user_data,
-            message="로그인에 성공했습니다"
-        )
-        
-    except Exception as e:
-        current_app.logger.error(f"Error in login_user: {str(e)}")
-        return api_error("로그인 중 오류가 발생했습니다", 500)
 
-@bp.route('/users/<user_id>', methods=['GET'])
-def get_user(user_id):
-    """
-    사용자 정보 조회
-    ---
-    tags:
-      - Users
-    parameters:
-      - name: user_id
-        in: path
-        required: true
-        type: string
-        description: 사용자 ID
-    responses:
-      200:
-        description: 사용자 정보 조회 성공
-      404:
-        description: 사용자를 찾을 수 없음
-    """
-    try:
-        user = User.query.get(user_id)
-        
-        if not user:
-            return api_error("사용자를 찾을 수 없습니다", 404)
-        
-        user_data = user.to_dict()
-        
-        return api_response(data=user_data)
-        
-    except Exception as e:
-        current_app.logger.error(f"Error in get_user: {str(e)}")
-        return api_error("사용자 정보 조회 중 오류가 발생했습니다", 500)
 
-@bp.route('/users/<user_id>', methods=['PUT'])
-def update_user(user_id):
-    """
-    사용자 정보 수정
-    ---
-    tags:
-      - Users
-    parameters:
-      - name: user_id
-        in: path
-        required: true
-        type: string
-        description: 사용자 ID
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          properties:
-            phone:
-              type: string
-              description: 전화번호
-            profile_image_url:
-              type: string
-              description: 프로필 이미지 URL
-    responses:
-      200:
-        description: 사용자 정보 수정 성공
-      404:
-        description: 사용자를 찾을 수 없음
-    """
-    try:
-        user = User.query.get(user_id)
-        
-        if not user:
-            return api_error("사용자를 찾을 수 없습니다", 404)
-        
-        data = request.get_json(force=True, silent=False)
-        
-        # 수정 가능한 필드들
-        if 'phone' in data:
-            user.phone = (data['phone'] or '').strip() or None
-        
-        if 'profile_image_url' in data:
-            user.profile_image_url = (data['profile_image_url'] or '').strip() or None
-        
-        db.session.commit()
-        
-        user_data = user.to_dict()
-        
-        return api_response(
-            data=user_data,
-            message="사용자 정보가 수정되었습니다"
-        )
-        
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"Error in update_user: {str(e)}")
-        return api_error("사용자 정보 수정 중 오류가 발생했습니다", 500)
+
+
+
+
+
 
 @bp.route('/posts/<post_id>/like', methods=['POST'])
 def toggle_like(post_id):
@@ -1044,7 +752,7 @@ def toggle_like(post_id):
             }), 400
 
         # 게시글 존재 확인
-        post = Post.query.get(post_id)
+        post = Post.query.filter_by(id=post_id, status='visible').first()  # visible 상태만 조회 (추가됨)
         current_app.logger.info(f"게시글 조회 결과: {post.id if post else 'None'}")
         
         if not post:
@@ -1131,6 +839,25 @@ def get_like_status(post_id):
             "success": False,
             "message": "좋아요 상태 확인 중 오류가 발생했습니다."
         }), 500
+
+
+
+@bp.route('/posts/<post_id>/update-comment-count', methods=['POST'])
+def update_post_comment_count(post_id):
+    """특정 게시글의 댓글 수를 업데이트 (Comment 서비스에서 호출용) (추가됨)"""
+    try:
+        # Comment 서비스에서 댓글 수 가져와서 업데이트
+        comment_count = PostService.update_comment_count(post_id)
+        
+        return api_response(data={
+            "post_id": post_id,
+            "comment_count": comment_count,
+            "message": "댓글 수가 업데이트되었습니다"
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"댓글 수 업데이트 실패: {str(e)}")
+        return api_error("댓글 수 업데이트에 실패했습니다", 500)
 
 
 

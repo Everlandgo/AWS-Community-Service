@@ -233,6 +233,16 @@
   cursor: pointer;
 }
 
+/* 클릭 가능한 제목 스타일 (추가됨) */
+.my-post-title.clickable {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.my-post-title.clickable:hover {
+  text-decoration: underline;
+}
+
 .comments-cell {
   color: var(--text-light);
   justify-content: center;

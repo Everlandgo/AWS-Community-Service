@@ -5,7 +5,7 @@ import CommonLayout from './CommonLayout';
 import "../styles/LoginPage.css"
 import { CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
 import { userPool } from '../aws-config';
-import { logSessionEvent } from '../utils/tokenUtils';
+import { logSessionEvent, decodeToken } from '../utils/tokenUtils';
 
 class LoginPage extends Component {
   constructor(props) {
@@ -60,16 +60,26 @@ class LoginPage extends Component {
       user.authenticateUser(authDetails, {
         onSuccess: (session) => {
           // 로그인 성공
+          const idToken = session.getIdToken().getJwtToken();
+          const accessToken = session.getAccessToken().getJwtToken();
+          const refreshToken = session.getRefreshToken().getToken();
+          
+          // JWT 토큰에서 실제 사용자 정보 추출
+          const tokenPayload = decodeToken(idToken);
+          const actualSub = tokenPayload?.sub || 'cognito_user_' + Date.now();
+          const actualEmail = tokenPayload?.email || (username.includes('@') ? username : `${username}@cognito.local`);
+          const actualUsername = tokenPayload?.cognito_username || tokenPayload?.username || username;
+          
           const userData = {
-            username: username,
-            sub: 'cognito_user_' + Date.now(),
-            email: username.includes('@') ? username : `${username}@cognito.local`,
-            access_token: session.getAccessToken().getJwtToken(),
-            id_token: session.getIdToken().getJwtToken(),
-            refresh_token: session.getRefreshToken().getToken(),
+            username: actualUsername,
+            sub: actualSub,
+            email: actualEmail,
+            access_token: accessToken,
+            id_token: idToken,
+            refresh_token: refreshToken,
             profile: {
-              name: username,
-              username: username
+              name: actualUsername,
+              username: actualUsername
             }
           };
           

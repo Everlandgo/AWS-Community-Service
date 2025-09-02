@@ -9,7 +9,7 @@ from flask import Flask, jsonify, send_from_directory, render_template
 from flask_cors import CORS
 from flask_swagger_ui import get_swaggerui_blueprint
 from werkzeug.exceptions import HTTPException, NotFound
-from flask_migrate import Migrate
+
 
 from post.models import db
 from post.routes import bp
@@ -45,13 +45,15 @@ def create_app(config_class=None):
 
     # 데이터베이스 초기화
     db.init_app(app)
-    Migrate(app, db)
     
-    # 데이터베이스 테이블 생성 및 카테고리 초기화
+    # 데이터베이스 테이블 생성
     with app.app_context():
-        db.create_all()
-        from post.models import init_categories
-        init_categories()
+        try:
+            db.create_all()
+            logger.info("Database tables created successfully")
+        except Exception as e:
+            logger.error(f"Database initialization failed: {str(e)}")
+            raise
 
     # Swagger UI 설정
     SWAGGER_URL = '/api/docs'

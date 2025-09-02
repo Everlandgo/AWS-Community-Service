@@ -324,6 +324,40 @@ class PostDetails extends Component {
     return currentUserSub && comment.user_id && currentUserSub === comment.user_id;
   };
 
+  // 게시글 소유자 여부 (추가됨)
+  isPostOwner = () => {
+    const currentUserSub = this.getCurrentUserSub();
+    const { post } = this.state;
+    return currentUserSub && post?.user_id && currentUserSub === post.user_id;
+  };
+
+  // 게시글 삭제 (추가됨)
+  handleDeletePost = async (postId) => {
+    if (!window.confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8081/api/v1/posts/${postId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        alert('게시글이 성공적으로 삭제되었습니다.');
+        this.props.navigate('/'); // 메인 페이지로 이동
+      } else {
+        const errorData = await response.json();
+        alert(`삭제 실패: ${errorData.message || '알 수 없는 오류가 발생했습니다.'}`);
+      }
+    } catch (error) {
+      console.error('게시글 삭제 중 오류:', error);
+      alert('게시글 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
   // 댓글 삭제
   handleDelete = async (commentId) => {
     if (!this.props.isLoggedIn) {
@@ -406,9 +440,26 @@ class PostDetails extends Component {
 
         {/* 게시글 상세 내용 */}
         <article className="post-detail-card">
-          {/* 맨 위: 카테고리 */}
+          {/* 맨 위: 카테고리와 수정/삭제 버튼 */}
           <div className="post-category-header">
             <span className="category-tag">{post.category || '미분류'}</span>
+            {/* 게시글 작성자만 수정/삭제 버튼 표시 (추가됨) */}
+            {this.isPostOwner() && (
+              <div className="post-action-buttons">
+                <button 
+                  className="edit-button"
+                  onClick={() => this.props.navigate(`/write?edit=${post.id}`)}
+                >
+                  수정
+                </button>
+                <button 
+                  className="delete-button"
+                  onClick={() => this.handleDeletePost(post.id)}
+                >
+                  삭제
+                </button>
+              </div>
+            )}
           </div>
 
           {/* 제목과 작성시간 */}
@@ -428,7 +479,7 @@ class PostDetails extends Component {
           {/* 닉네임과 통계 정보 */}
           <div className="post-meta-section">
             <div className="post-author">
-              {post.author || 'Anonymous'}
+              {post.username || 'Anonymous'}
             </div>
             <div className="post-stats">
               <span className="stat-item">조회수 {post.view_count || 0}</span>
@@ -481,7 +532,7 @@ class PostDetails extends Component {
                   <div className="comment-meta">
                     <span className="comment-author">
                       <User size={14} style={{ marginRight: '4px' }} />
-                      {comment.user_name || comment.author || 'Anonymous'}
+                      {comment.user_name || comment.username || 'Anonymous'}
                     </span>
                     <span className="comment-date">
                       {new Date(comment.created_at).toLocaleString('ko-KR', {
