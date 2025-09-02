@@ -440,153 +440,154 @@ class PostDetails extends Component {
         </div>
 
         {/* 게시글 상세 내용 */}
-        <article className="post-detail-card">
-          {/* 맨 위: 카테고리와 수정/삭제 버튼 */}
-          <div className="post-category-header">
-            <span className="category-tag">{post.category || '미분류'}</span>
-            {/* 게시글 작성자만 수정/삭제 버튼 표시 (추가됨) */}
-            {this.isPostOwner() && (
-              <div className="post-action-buttons">
-                <button 
-                  className="edit-button"
-                  onClick={() => this.props.navigate(`/write?edit=${post.id}`)}
-                >
-                  수정
-                </button>
-                <button 
-                  className="delete-button"
-                  onClick={() => this.handleDeletePost(post.id)}
-                >
-                  삭제
-                </button>
-              </div>
-            )}
-          </div>
-
-            {/* 제목과 작성시간 */}
-            <div className="post-title-section">
-              <h1 className="post-title">{post.title}</h1>
-              <div className="post-creation-time">
-                {new Date(post.created_at).toLocaleString('ko-KR', {
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </div>
-            </div>
-
-          {/* 닉네임과 통계 정보 */}
-          <div className="post-meta-section">
-            <div className="post-author">
-              {post.username || 'Anonymous'}
-            </div>
-            <div className="post-stats">
-              <span className="stat-item">조회수 {post.view_count || 0}</span>
-              <span className="stat-item">좋아요 {post.like_count || 0}</span>
-              <span className="stat-item">댓글 {post.comment_count || 0}</span>
-            </div>
-          </div>
-
-            {/* 게시글 내용 */}
-            <div className="post-content">
-              {post.content}
-            </div>
-
-            {/* 하단: 좋아요 버튼과 좋아요 수 */}
-            <div className="post-actions">
-              <button 
-                className={`like-button ${isLiked ? 'liked' : ''}`}
-                onClick={this.handleLikeToggle}
-              >
-                <Heart size={20} />
-              </button>
-            </div>
-          </article>
-
-        {/* ✅ 통합: 댓글 섹션 추가 */}
-        <div className="comments-section">
-          <h2>댓글 ({comments.length})</h2>
-          
-          {/* 댓글 입력 폼 */}
-          {isLoggedIn && (
-            <form className="comment-form" onSubmit={this.handleCommentSubmit}>
-              <textarea
-                className="comment-input"
-                value={newComment}
-                onChange={this.handleCommentChange}
-                placeholder="댓글을 입력하세요..."
-                rows="3"
-              />
-              <button type="submit" className="comment-submit-btn">작성</button>
-            </form>
-          )}
-          
-          {/* 댓글 목록 */}
-          <div className="comments-list">
-            {comments.length > 0 ? (
-              comments.map((comment, index) => (
-                <div key={index} className="comment-item">
-                  <div className="comment-meta">
-                    <span className="comment-author">
-                      <User size={14} style={{ marginRight: '4px' }} />
-                      {comment.user_name || comment.username || 'Anonymous'}
-                    </span>
-                    <span className="comment-date">
-                      {new Date(comment.created_at).toLocaleString('ko-KR', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  </div>
-                  {this.state.editingCommentId === comment.id ? (
-                    <div className="comment-editing">
-                      <textarea
-                        className="comment-edit-input"
-                        rows="3"
-                        value={this.state.editingContent}
-                        onChange={this.handleEditChange}
-                      />
-                      <div className="comment-actions">
-                        <button type="button" className="comment-btn primary" onClick={() => this.handleEditSave(comment.id)}>저장</button>
-                        <button type="button" className="comment-btn" onClick={this.handleEditCancel}>취소</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="comment-content">
-                      {comment.content}
-                    </div>
-                  )}
-
-                    <div className="comment-footer">
-                      <div className="comment-like">
-                        <button
-                          type="button"
-                          className={`like-btn ${this.state.commentLikeStatus[comment.id] ? 'liked' : ''}`}
-                          onClick={() => this.handleCommentLikeToggle(comment.id)}
-                          disabled={!isLoggedIn}
-                          title={!isLoggedIn ? '로그인이 필요합니다' : ''}
-                        >
-                          <Heart size={16} /> 
-                        </button>
-                      </div>
-    
-                        {isLoggedIn && this.isOwner(comment) && this.state.editingCommentId !== comment.id && (
-                        <div className="comment-owner-actions">
-                          <button type="button" className="comment-btn" onClick={() => this.handleStartEdit(comment)}>수정</button>
-                          <button type="button" className="comment-btn" onClick={() => this.handleDelete(comment.id)}>삭제</button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="no-comments">아직 댓글이 없습니다.</p>
+        <div className='post-detail-whole'>
+          <article className="post-detail-card">
+            {/* 맨 위: 카테고리와 수정/삭제 버튼 */}
+            <div className="post-category-header">
+              <span className="category-tag">{post.category || '미분류'}</span>
+              {/* 게시글 작성자만 수정/삭제 버튼 표시 (추가됨) */}
+              {this.isPostOwner() && (
+                <div className="post-action-buttons">
+                  <button 
+                    className="edit-button"
+                    onClick={() => this.props.navigate(`/write?edit=${post.id}`)}
+                  >
+                    수정
+                  </button>
+                  <button 
+                    className="delete-button"
+                    onClick={() => this.handleDeletePost(post.id)}
+                  >
+                    삭제
+                  </button>
+                </div>
               )}
+            </div>
+
+              {/* 제목과 작성시간 */}
+              <div className="post-title-section">
+                <h1 className="post-title">{post.title}</h1>
+                <div className="post-creation-time">
+                  {new Date(post.created_at).toLocaleString('ko-KR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </div>
+              </div>
+
+            {/* 닉네임과 통계 정보 */}
+            <div className="post-meta-section">
+              <div className="post-author">
+                {post.username || 'Anonymous'}
+              </div>
+              <div className="post-stats">
+                <span className="stat-item">조회수 {post.view_count || 0}</span>
+                <span className="stat-item">좋아요 {post.like_count || 0}</span>
+                <span className="stat-item">댓글 {post.comment_count || 0}</span>
+              </div>
+            </div>
+
+              {/* 게시글 내용 */}
+              <div className="post-content">
+                {post.content}
+              </div>
+
+              {/* 하단: 좋아요 버튼과 좋아요 수 */}
+              <div className="post-actions">
+                <button 
+                  className={`like-button ${isLiked ? 'liked' : ''}`}
+                  onClick={this.handleLikeToggle}
+                >
+                  <Heart size={20} />
+                </button>
+              </div>
+            </article>
+
+          {/* ✅ 통합: 댓글 섹션 추가 */}
+          <div className="comments-section">
+            <h2>댓글 ({comments.length})</h2>
+            
+            {/* 댓글 입력 폼 */}
+            {isLoggedIn && (
+              <form className="comment-form" onSubmit={this.handleCommentSubmit}>
+                <input
+                  className="comment-input"
+                  value={newComment}
+                  onChange={this.handleCommentChange}
+                  placeholder="댓글을 입력하세요..."
+                />
+                <button type="submit" className="comment-submit-btn">작성</button>
+              </form>
+            )}
+            
+            {/* 댓글 목록 */}
+            <div className="comments-list">
+              {comments.length > 0 ? (
+                comments.map((comment, index) => (
+                  <div key={index} className="comment-item">
+                    <div className="comment-meta">
+                      <span className="comment-author">
+                        <User size={14} style={{ marginRight: '4px' }} />
+                        {comment.user_name || comment.username || 'Anonymous'}
+                      </span>
+                      <span className="comment-date">
+                        {new Date(comment.created_at).toLocaleString('ko-KR', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                    {this.state.editingCommentId === comment.id ? (
+                      <div className="comment-editing">
+                        <input
+                          className="comment-edit-input"
+                          rows="1"
+                          value={this.state.editingContent}
+                          onChange={this.handleEditChange}
+                        />
+                        <div className="comment-actions">
+                          <button type="button" className="comment-edit-save" onClick={() => this.handleEditSave(comment.id)}>저장</button>
+                          <button type="button" className="comment-edit-cancel" onClick={this.handleEditCancel}>취소</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="comment-content">
+                        {comment.content}
+                      </div>
+                    )}
+
+                      <div className="comment-footer">
+                        <div className="comment-like">
+                          <button
+                            type="button"
+                            className={`like-button ${this.state.commentLikeStatus[comment.id] ? 'liked' : ''}`}
+                            onClick={() => this.handleCommentLikeToggle(comment.id)}
+                            disabled={!isLoggedIn}
+                            title={!isLoggedIn ? '로그인이 필요합니다' : ''}
+                          >
+                            <Heart size={16} /> 
+                          </button>
+                        </div>
+      
+                          {isLoggedIn && this.isOwner(comment) && this.state.editingCommentId !== comment.id && (
+                          <div className="comment-owner-actions">
+                            <button type="button" className="comment-edit-btn" onClick={() => this.handleStartEdit(comment)}>수정</button>
+                            <button type="button" className="comment-delete-btn" onClick={() => this.handleDelete(comment.id)}>삭제</button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="no-comments">아직 댓글이 없습니다.</p>
+                )}
+              </div>
             </div>
           </div>
       </CommonLayout>
