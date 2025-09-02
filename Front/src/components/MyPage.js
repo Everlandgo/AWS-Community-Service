@@ -3,7 +3,7 @@ import { User, Mail, Calendar, ArrowLeft, Edit, Trash2, Eye, Heart, MessageCircl
 import CommonLayout from './CommonLayout';
 import "../styles/MyPage.css"
 import UserService from '../services/UserService';
-import { clearExpiredTokens } from '../utils/tokenUtils';
+import {decodeToken,getCognitoToken } from '../utils/tokenUtils';
 
 class MyPage extends Component {
   constructor(props) {
