@@ -40,8 +40,20 @@ class MyPage extends Component {
         return;
       }
 
+      // JWT 토큰에서 실제 사용자 정보 추출
+      const token = getCognitoToken();
+      const tokenPayload = token ? decodeToken(token) : null;
+      const actualSub = tokenPayload?.sub || currentUser.sub;
+      
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       // 백엔드에서 사용자가 작성한 글 가져오기
-      const response = await fetch(`http://localhost:8081/api/v1/posts?author_id=${currentUser.sub}`);
+      const response = await fetch(`http://localhost:8081/api/v1/posts?user_id=${actualSub}`, {
+        headers: headers
+      });
       if (response.ok) {
         const data = await response.json();
         const posts = data.posts || data.data || [];
@@ -222,8 +234,9 @@ class MyPage extends Component {
                         </div>
                         <div className="my-table-cell title-cell">
                           <span 
-                            className="my-post-title"
-                            onClick={() => this.props.navigate(`/post/${post.id}`)}
+                            className="my-post-title clickable" 
+                            onClick={() => this.props.navigate(`/post/${post.id}`)} // 게시글 상세 페이지로 이동 (추가됨)
+                            title="게시글 보기"
                           >
                             {post.title}
                           </span>

@@ -22,26 +22,13 @@ class PostValidator:
             errors.append("제목은 200자를 초과할 수 없습니다")
         
         # 작성자 ID 검증
-        author_id = data.get('author_id')
-        if not author_id:
+        user_id = data.get('user_id')
+        if not user_id:
             errors.append("작성자 ID는 필수입니다")
-        elif not PostValidator._is_valid_id(author_id):
+        elif not PostValidator._is_valid_id(user_id):
             errors.append("올바르지 않은 작성자 ID 형식입니다")
         
-        # 내용 검증
-        content_md = data.get('content_md', '').strip()
-        if content_md and len(content_md) > 10000:
-            errors.append("내용은 10,000자를 초과할 수 없습니다")
-        
-        # 공개 설정 검증
-        visibility = data.get('visibility', 'PUBLIC')
-        if visibility not in ['PUBLIC', 'PRIVATE', 'UNLISTED']:
-            errors.append("올바르지 않은 공개 설정입니다")
-        
-        # 상태 검증
-        status = data.get('status', 'DRAFT')
-        if status not in ['PUBLISHED', 'DRAFT']:
-            errors.append("올바르지 않은 상태입니다")
+
         
         return len(errors) == 0, errors
     
@@ -59,30 +46,14 @@ class PostValidator:
                 errors.append("제목은 200자를 초과할 수 없습니다")
         
         # 작성자 ID 검증
-        if 'author_id' in data:
-            author_id = data['author_id']
-            if not author_id:
+        if 'user_id' in data:
+            user_id = data['user_id']
+            if not user_id:
                 errors.append("작성자 ID는 비어있을 수 없습니다")
-            elif not PostValidator._is_valid_id(author_id):
+            elif not PostValidator._is_valid_id(user_id):
                 errors.append("올바르지 않은 작성자 ID 형식입니다")
         
-        # 내용 검증
-        if 'content_md' in data:
-            content_md = data['content_md'].strip()
-            if content_md and len(content_md) > 10000:
-                errors.append("내용은 10,000자를 초과할 수 없습니다")
-        
-        # 공개 설정 검증
-        if 'visibility' in data:
-            visibility = data['visibility']
-            if visibility not in ['PUBLIC', 'PRIVATE', 'UNLISTED']:
-                errors.append("올바르지 않은 공개 설정입니다")
-        
-        # 상태 검증
-        if 'status' in data:
-            status = data['status']
-            if status not in ['PUBLISHED', 'DRAFT']:
-                errors.append("올바르지 않은 상태입니다")
+
         
         return len(errors) == 0, errors
     
@@ -146,14 +117,6 @@ class SearchValidator:
         if q and len(q) > 100:
             errors.append("검색어는 100자를 초과할 수 없습니다")
         
-        # 공개 설정 검증
-        visibility = params.get('visibility', 'PUBLIC')
-        if visibility not in ['PUBLIC', 'PRIVATE', 'UNLISTED']:
-            errors.append("올바르지 않은 공개 설정입니다")
-        
-        # 상태 검증
-        status = params.get('status', 'PUBLISHED')
-        if status not in ['PUBLISHED', 'DRAFT', 'DELETED']:
-            errors.append("올바르지 않은 상태입니다")
+
         
         return len(errors) == 0, errors

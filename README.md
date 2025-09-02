@@ -1,142 +1,56 @@
-# 🚀 게시판 애플리케이션 실행 방법
+# AWS Community Service - 오늘 작업 내역
 
-## 📋 사전 요구사항
+## 🔄 댓글 수 자동 동기화 구현
+- **Post 서비스**에 댓글 수 업데이트 API 추가
+- **Comment 서비스**에서 댓글 작성/삭제 시 Post 서비스에 자동 알림 전송
+- **실시간 동기화**: 댓글 변경 시 즉시 Post DB의 comment_count 업데이트
 
-- **Docker Desktop** 설치 및 실행
-- **Git** 설치
+## 📱 메인 페이지 댓글 수 표시
+- 게시글 제목 옆에 댓글 수 표시: `"제목 (5)"` 형태
+- 댓글이 0개인 게시글은 댓글 수 숨김
+- 회색 텍스트로 제목과 구분
 
-## 🚀 빠른 시작
+## 🔐 JWT 토큰 처리 완성
+- **Post 서비스**에 JWT 토큰 검증 시스템 추가
+- **Cognito sub 값**을 user_id로 사용
+- **Frontend**에서 Authorization 헤더로 토큰 전송
 
-### 1. 프로젝트 클론
+## 🗑️ 불필요한 테이블/필드 제거
+- **users 테이블** 삭제 (Cognito 사용으로 불필요)
+- **tags 테이블** 삭제 (사용하지 않음)
+- **post_reactions 테이블** 삭제 (likes 테이블로 대체)
+- **posts 테이블**에서 불필요한 필드 제거: content_md, content_s3url, visibility, status
 
-```bash
-git clone https://github.com/ksjj3765/Front.git
-cd Front
-git checkout Combined_repo_Ju
-```
+## 🗄️ 데이터베이스 시스템 통일
+- **Post 서비스**를 MySQL로 변경 (Comment 서비스와 동일)
+- **Alembic 마이그레이션** 시스템 제거
+- **db.create_all()** 방식으로 변경
 
-### 2. 환경 변수 설정
+## 🕐 한국 시간(KST) 적용
+- 모든 시간 필드에 한국 시간(UTC+9) 적용
+- created_at, updated_at 필드에 kst_now() 함수 사용
 
-프로젝트 루트에 `.env` 파일을 생성하고 다음 내용을 추가하세요:
+## 🏷️ 카테고리 자동 생성
+- 프론트엔드에서 문자열로 받은 카테고리를 DB에 자동 생성
+- 기존 카테고리 조회 또는 새 카테고리 생성 로직 복원
 
-```env
-# AWS Cognito 설정
-REACT_APP_COGNITO_USER_POOL_ID=ap-northeast-2_nneGIIVuJ
-REACT_APP_COGNITO_CLIENT_ID=2v16jp80jce0c40neuuhtlgg8t
-REACT_APP_COGNITO_REGION=ap-northeast-2
+## 📊 변경 통계
+- **수정된 파일**: 15개
+- **신규 파일**: 1개 (auth_utils.py)
+- **삭제된 파일**: 5개 (migrations 폴더)
+- **총 변경 라인**: 약 530라인
 
-# 백엔드 서비스 Cognito 설정
-COGNITO_USER_POOL_ID=ap-northeast-2_nneGIIVuJ
-COGNITO_CLIENT_ID=2v16jp80jce0c40neuuhtlgg8t
-COGNITO_REGION=ap-northeast-2
+## 🚀 작동 방식
+1. **댓글 작성/삭제** → Comment 서비스 처리
+2. **Comment 서비스** → Post 서비스에 알림 전송
+3. **Post 서비스** → Comment 서비스에서 댓글 수 조회 후 DB 업데이트
+4. **메인 페이지** → 업데이트된 댓글 수 표시
 
-# 백엔드 API 설정
-REACT_APP_API_BASE_URL=http://localhost:8081
-REACT_APP_COMMENT_SERVICE_URL=http://localhost:8083
-
-# AWS 자격 증명 (MinIO 사용 시)
-AWS_ACCESS_KEY_ID=minioadmin
-AWS_SECRET_ACCESS_KEY=minioadmin
-AWS_DEFAULT_REGION=ap-northeast-2
-
-# 데이터베이스 설정
-MYSQL_ROOT_PASSWORD=rootpass
-MYSQL_DATABASE=communitydb
-MYSQL_USER=postuser
-MYSQL_PASSWORD=postpass
-```
-
-### 3. Docker Compose로 실행
-
-```bash
-# 모든 서비스 시작
-docker-compose up -d
-
-# 로그 확인
-docker-compose logs -f
-
-# 특정 서비스 로그 확인
-docker-compose logs -f frontend
-docker-compose logs -f post-service
-```
-
-### 4. 서비스 접속
-
-- **프론트엔드**: http://localhost:3000
-- **백엔드 API**: http://localhost:8081
-- **MinIO 콘솔**: http://localhost:9001
-- **MySQL**: localhost:3306
-
-## 🔧 개발 환경 설정
-
-### Docker 개발 환경
-
-```bash
-# 개발 모드로 실행 (볼륨 마운트)
-docker-compose -f docker-compose.yml up -d
-
-# 특정 서비스만 재시작
-docker-compose restart frontend
-docker-compose restart post-service
-
-# 서비스 중지
-docker-compose down
-```
-
-## 🐛 문제 해결
-
-### 일반적인 문제들
-
-#### 1. 포트 충돌
-```bash
-# 포트 사용 확인
-netstat -an | findstr :3000
-netstat -an | findstr :8081
-
-# Docker 컨테이너 상태 확인
-docker ps
-```
-
-#### 2. 프론트엔드 "Failed to fetch" 오류
-- 백엔드 서비스가 실행 중인지 확인
-- API URL이 올바른지 확인 (localhost:8081)
-- 브라우저 개발자 도구에서 네트워크 탭 확인
-
-#### 3. 컨테이너 재시작
-```bash
-# 전체 재시작
-docker-compose down
-docker-compose up -d
-
-# 특정 서비스만 재시작
-docker-compose restart mysql
-docker-compose restart post-service
-docker-compose restart frontend
-```
-
-### 로그 확인
-```bash
-# 실시간 로그 모니터링
-docker-compose logs -f
-
-# 특정 서비스 로그
-docker-compose logs -f frontend
-docker-compose logs -f post-service
-docker-compose logs -f mysql
-docker-compose logs -f minio
-```
-
-## 📊 서비스 상태 확인
-
-```bash
-# 모든 컨테이너 상태
-docker ps
-
-# 서비스 헬스체크
-curl http://localhost:8081/health
-curl http://localhost:3000
-```
-
----
-
-**Happy Coding! 🎉**
+## ✅ 완료된 기능
+- [x] 댓글 수 자동 동기화
+- [x] 메인 페이지 댓글 수 표시
+- [x] JWT 토큰 인증
+- [x] 불필요한 테이블/필드 제거
+- [x] MySQL 통일
+- [x] 한국 시간 적용
+- [x] 카테고리 자동 생성

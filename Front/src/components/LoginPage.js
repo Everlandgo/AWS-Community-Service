@@ -5,7 +5,7 @@ import CommonLayout from './CommonLayout';
 import "../styles/LoginPage.css"
 import { CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
 import { userPool } from '../aws-config';
-import { logSessionEvent } from '../utils/tokenUtils';
+import { logSessionEvent, decodeToken } from '../utils/tokenUtils';
 
 class LoginPage extends Component {
   constructor(props) {
@@ -60,34 +60,26 @@ class LoginPage extends Component {
       user.authenticateUser(authDetails, {
         onSuccess: (session) => {
           // 로그인 성공
-          
           const idToken = session.getIdToken().getJwtToken();
           const accessToken = session.getAccessToken().getJwtToken();
           const refreshToken = session.getRefreshToken().getToken();
-
-          let idPayload = null;
-          try {
-            const base64Url = idToken.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            idPayload = JSON.parse(window.atob(base64));
-          } catch (e) {
-            // 무시하고 폴백 사용
-          }
-
-          const payloadSub = idPayload?.sub || null;
-          const payloadUsername = idPayload?.['cognito:username'] || idPayload?.username || username;
-          const payloadEmail = idPayload?.email || (username.includes('@') ? username : `${username}@cognito.local`);
-
+          
+          // JWT 토큰에서 실제 사용자 정보 추출
+          const tokenPayload = decodeToken(idToken);
+          const actualSub = tokenPayload?.sub || 'cognito_user_' + Date.now();
+          const actualEmail = tokenPayload?.email || (username.includes('@') ? username : `${username}@cognito.local`);
+          const actualUsername = tokenPayload?.cognito_username || tokenPayload?.username || username;
+          
           const userData = {
-            username: payloadUsername,
-            sub: payloadSub,
-            email: payloadEmail,
+            username: actualUsername,
+            sub: actualSub,
+            email: actualEmail,
             access_token: accessToken,
             id_token: idToken,
             refresh_token: refreshToken,
             profile: {
-              name: payloadUsername,
-              username: payloadUsername
+              name: actualUsername,
+              username: actualUsername
             }
           };
           

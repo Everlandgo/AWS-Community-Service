@@ -15,19 +15,12 @@ class Config:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     
-    # 데이터베이스 연결 (MySQL 우선, SQLite 폴백)
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///post_service.db'
+    # 데이터베이스 설정 - Docker 환경에서는 mysql 서비스명 사용
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://postuser:postpass@mysql:3306/postdb'
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    # MySQL 연결 풀 설정
-    if 'mysql' in (os.environ.get('DATABASE_URL') or ''):
-        SQLALCHEMY_ENGINE_OPTIONS = {
-            'pool_size': 10,
-            'pool_recycle': 3600,
-            'pool_pre_ping': True
-        }
+
     
     # MSA 서비스 URL (User, Notification 서비스 연동용)
     USER_SERVICE_URL = os.environ.get('USER_SERVICE_URL', 'http://localhost:8081')
@@ -39,11 +32,14 @@ class Config:
     MINIO_ACCESS_KEY = os.environ.get('MINIO_ACCESS_KEY', 'minioadmin')
     MINIO_SECRET_KEY = os.environ.get('MINIO_SECRET_KEY', 'minioadmin')
     MINIO_BUCKET_NAME = os.environ.get('MINIO_BUCKET_NAME', 'post-images')
+    
+    # AWS Cognito 설정
+    COGNITO_USER_POOL_ID = os.environ.get('COGNITO_USER_POOL_ID', 'ap-northeast-2_nneGIIVuJ')
+    COGNITO_REGION = os.environ.get('COGNITO_REGION', 'ap-northeast-2')
+    COGNITO_CLIENT_ID = os.environ.get('COGNITO_CLIENT_ID', '2v16jp80j40neuuhtlgg8t')
 
 class TestConfig(Config):
     """테스트용 설정"""
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
-    # SQLite는 pool 옵션을 지원하지 않으므로 제거
-    SQLALCHEMY_ENGINE_OPTIONS = {}
 

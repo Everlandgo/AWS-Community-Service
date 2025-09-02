@@ -324,6 +324,40 @@ class PostDetails extends Component {
     return currentUserSub && comment.user_id && currentUserSub === comment.user_id;
   };
 
+  // 게시글 소유자 여부 (추가됨)
+  isPostOwner = () => {
+    const currentUserSub = this.getCurrentUserSub();
+    const { post } = this.state;
+    return currentUserSub && post?.user_id && currentUserSub === post.user_id;
+  };
+
+  // 게시글 삭제 (추가됨)
+  handleDeletePost = async (postId) => {
+    if (!window.confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8081/api/v1/posts/${postId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        alert('게시글이 성공적으로 삭제되었습니다.');
+        this.props.navigate('/'); // 메인 페이지로 이동
+      } else {
+        const errorData = await response.json();
+        alert(`삭제 실패: ${errorData.message || '알 수 없는 오류가 발생했습니다.'}`);
+      }
+    } catch (error) {
+      console.error('게시글 삭제 중 오류:', error);
+      alert('게시글 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
   // 댓글 삭제
   handleDelete = async (commentId) => {
     if (!this.props.isLoggedIn) {
@@ -405,13 +439,29 @@ class PostDetails extends Component {
           </button>
         </div>
 
-        <div className='post-detail-whole'>
-          {/* 게시글 상세 내용 */}
-          <article className="post-detail-card">
-            {/* 맨 위: 카테고리 */}
-            <div className="post-category-header">
-              <span className="category-tag">{post.category || '미분류'}</span>
-            </div>
+        {/* 게시글 상세 내용 */}
+        <article className="post-detail-card">
+          {/* 맨 위: 카테고리와 수정/삭제 버튼 */}
+          <div className="post-category-header">
+            <span className="category-tag">{post.category || '미분류'}</span>
+            {/* 게시글 작성자만 수정/삭제 버튼 표시 (추가됨) */}
+            {this.isPostOwner() && (
+              <div className="post-action-buttons">
+                <button 
+                  className="edit-button"
+                  onClick={() => this.props.navigate(`/write?edit=${post.id}`)}
+                >
+                  수정
+                </button>
+                <button 
+                  className="delete-button"
+                  onClick={() => this.handleDeletePost(post.id)}
+                >
+                  삭제
+                </button>
+              </div>
+            )}
+          </div>
 
             {/* 제목과 작성시간 */}
             <div className="post-title-section">
@@ -427,17 +477,17 @@ class PostDetails extends Component {
               </div>
             </div>
 
-            {/* 닉네임과 통계 정보 */}
-            <div className="post-meta-section">
-              <div className="post-author">
-                {post.author || 'Anonymous'}
-              </div>
-              <div className="post-stats">
-                <span className="stat-item">조회수 {post.view_count || 0}</span>
-                <span className="stat-item">좋아요 {post.like_count || 0}</span>
-                <span className="stat-item">댓글 {post.comment_count || 0}</span>
-              </div>
+          {/* 닉네임과 통계 정보 */}
+          <div className="post-meta-section">
+            <div className="post-author">
+              {post.username || 'Anonymous'}
             </div>
+            <div className="post-stats">
+              <span className="stat-item">조회수 {post.view_count || 0}</span>
+              <span className="stat-item">좋아요 {post.like_count || 0}</span>
+              <span className="stat-item">댓글 {post.comment_count || 0}</span>
+            </div>
+          </div>
 
             {/* 게시글 내용 */}
             <div className="post-content">
@@ -455,62 +505,62 @@ class PostDetails extends Component {
             </div>
           </article>
 
-          {/* ✅ 통합: 댓글 섹션 추가 */}
-          <div className="comments-section">
-            <h2>댓글 ({comments.length})</h2>
-            
-            {/* 댓글 입력 폼 */}
-            {isLoggedIn && (
-              <form className="comment-form" onSubmit={this.handleCommentSubmit}>
-                <textarea
-                  className="comment-input"
-                  value={newComment}
-                  onChange={this.handleCommentChange}
-                  placeholder="댓글을 입력하세요..."
-                  rows="1"
-                />
-                <button type="submit" className="comment-submit-btn">작성</button>
-              </form>
-            )}
-            
-            {/* 댓글 목록 */}
-            <div className="comments-list">
-              {comments.length > 0 ? (
-                comments.map((comment, index) => (
-                  <div key={index} className="comment-item">
-                    <div className="comment-meta">
-                      <span className="comment-author">
-                        <User size={14} style={{ marginRight: '4px' }} />
-                        {comment.user_name || comment.author || 'Anonymous'}
-                      </span>
-                      <span className="comment-date">
-                        {new Date(comment.created_at).toLocaleString('ko-KR', {
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </span>
+        {/* ✅ 통합: 댓글 섹션 추가 */}
+        <div className="comments-section">
+          <h2>댓글 ({comments.length})</h2>
+          
+          {/* 댓글 입력 폼 */}
+          {isLoggedIn && (
+            <form className="comment-form" onSubmit={this.handleCommentSubmit}>
+              <textarea
+                className="comment-input"
+                value={newComment}
+                onChange={this.handleCommentChange}
+                placeholder="댓글을 입력하세요..."
+                rows="3"
+              />
+              <button type="submit" className="comment-submit-btn">작성</button>
+            </form>
+          )}
+          
+          {/* 댓글 목록 */}
+          <div className="comments-list">
+            {comments.length > 0 ? (
+              comments.map((comment, index) => (
+                <div key={index} className="comment-item">
+                  <div className="comment-meta">
+                    <span className="comment-author">
+                      <User size={14} style={{ marginRight: '4px' }} />
+                      {comment.user_name || comment.username || 'Anonymous'}
+                    </span>
+                    <span className="comment-date">
+                      {new Date(comment.created_at).toLocaleString('ko-KR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  </div>
+                  {this.state.editingCommentId === comment.id ? (
+                    <div className="comment-editing">
+                      <textarea
+                        className="comment-edit-input"
+                        rows="3"
+                        value={this.state.editingContent}
+                        onChange={this.handleEditChange}
+                      />
+                      <div className="comment-actions">
+                        <button type="button" className="comment-btn primary" onClick={() => this.handleEditSave(comment.id)}>저장</button>
+                        <button type="button" className="comment-btn" onClick={this.handleEditCancel}>취소</button>
+                      </div>
                     </div>
-                    {this.state.editingCommentId === comment.id ? (
-                      <div className="comment-editing">
-                        <textarea
-                          className="comment-edit-input"
-                          rows="1"
-                          value={this.state.editingContent}
-                          onChange={this.handleEditChange}
-                        />
-                        <div className="comment-actions">
-                          <button type="button" className="comment-btn primary" onClick={() => this.handleEditSave(comment.id)}>저장</button>
-                          <button type="button" className="comment-btn" onClick={this.handleEditCancel}>취소</button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="comment-content">
-                        {comment.content}
-                      </div>
-                    )}
+                  ) : (
+                    <div className="comment-content">
+                      {comment.content}
+                    </div>
+                  )}
 
                     <div className="comment-footer">
                       <div className="comment-like">

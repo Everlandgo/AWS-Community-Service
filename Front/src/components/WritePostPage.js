@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { User, ArrowLeft, Save, X } from 'lucide-react';
 import CommonLayout from './CommonLayout';
 import "../styles/WritePostPage.css"
+import { decodeToken, getCognitoToken } from '../utils/tokenUtils';
 
 class WritePostPage extends Component {
   constructor(props) {
@@ -97,13 +98,19 @@ class WritePostPage extends Component {
     const { title, content, category, postId } = this.state;
     const { currentUser } = this.props;
 
+    // JWT 토큰에서 실제 사용자 정보 추출
+    const token = getCognitoToken();
+    const tokenPayload = token ? decodeToken(token) : null;
+    const actualSub = tokenPayload?.sub || currentUser?.sub;
+    const actualUsername = tokenPayload?.cognito_username || tokenPayload?.username || currentUser?.username || 'Guest';
+
     const postData = {
       title,
       content,
       category,
       // Add these fields for post creation/update
-      author_id: currentUser?.sub,
-      author: currentUser?.username || 'Guest',
+      user_id: actualSub,
+      username: actualUsername,
     };
 
     let url = `http://localhost:8081/api/v1/posts`;
@@ -115,9 +122,31 @@ class WritePostPage extends Component {
       method = 'PATCH';
     }
     try {
+      // JWT 토큰 가져오기
+      const token = getCognitoToken();
+      console.log('🔐 WritePostPage - 토큰 확인:', {
+        hasToken: !!token,
+        tokenLength: token ? token.length : 0,
+        tokenPreview: token ? token.substring(0, 20) + '...' : 'null'
+      });
+      
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      // 토큰이 있으면 Authorization 헤더 추가
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        console.log('🔐 WritePostPage - Authorization 헤더 추가됨');
+      } else {
+        console.warn('⚠️ WritePostPage - 토큰이 없습니다!');
+      }
+      
+      console.log('🔐 WritePostPage - 최종 헤더:', headers);
+
       const response = await fetch(url, {
         method: method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: headers,
         body: JSON.stringify(postData),
       });
 
@@ -280,19 +309,23 @@ class WritePostPage extends Component {
 
             <div className="post-form-group">
               <label htmlFor="category" className="post-form-label">카테고리</label>
-              <select
-                id="category"
-                className="post-form-select"
-                value={category}
-                onChange={(e) => this.handleInputChange('category', e.target.value)}
-                required
-              >
-                {this.categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              <div className="category-input-container"> {/* 카테고리 입력 컨테이너 (추가됨) */}
+                <select
+                  id="category"
+                  className={`post-form-select ${postId ? 'disabled' : ''}`}
+                  value={category}
+                  onChange={(e) => this.handleInputChange('category', e.target.value)}
+                  disabled={!!postId}
+                  required
+                >
+                  {this.categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                {postId && <span className="disabled-hint">(수정 시 카테고리는 변경할 수 없습니다)</span>}
+              </div>
             </div>
 
             <div className="post-form-group">

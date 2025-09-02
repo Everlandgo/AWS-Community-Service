@@ -141,6 +141,14 @@
   text-overflow: ellipsis;
 }
 
+/* 댓글 수 스타일 (추가됨) */
+.comment-count {
+  color: var(--muted-foreground);
+  font-size: 13px;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
 /* Specific styling for the category tag */
 .category-tag {
   display: inline-flex;
