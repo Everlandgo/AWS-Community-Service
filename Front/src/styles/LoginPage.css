@@ -49,62 +49,72 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  max-width: 600px;
+  padding: 0 8px;
   gap: 12px;
 }
 
 .form-group {
-  width: 90%; /* Fixed width relative to parent container */
+  width: 100%; /* Fixed width relative to parent container */
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  background-color: var(--darker-bg);
-  border-radius: 999px;
-  padding: 2px 16px;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 2px 0;
+  gap: 4px;
 }
 
 .form-label {
-  width: 20px;
+  margin-left: 16px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--white-shine);
-  min-width: 40px; /* Fixed width for label to align inputs */
+  color: var(--subtitle);
+}
+
+.form-input-container {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
 }
 
 .form-input {
   flex-grow: 1; /* Input takes up remaining space */
   width: 100%;
   padding: 12px 20px;
-  margin: 2px 12px;
+  margin: 2px 0;
   border: none;
-  border-radius: 9999px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
   font-size: 16px;
   color: #1e293b;
-  background-color: var(--color-darker-bg);
+  background-color: var(--white-shadow);
   transition: background-color 0.2s;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); /* Inner shadow for depth */
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .form-input:focus {
   outline: none;
-  background-color: var(--default-bg);
+  background-color: var(--white);
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
 
 .form-input::placeholder {
-  color: var(--placeholder-white);
+  color: var(--placeholder-grey);
   font-size: 14px;
 }
 
-.password-input-container {
-  display: flex;
-  flex-direction: row;
-}
-
 .password-toggle {
-  width: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  padding: 0 4px;
   border: none;
   background-color: transparent;
-  color: var(--white-shine);
+  color: var(--subtitle);
+  cursor: pointer;
 }
 
 /* Login Button */
@@ -131,7 +141,7 @@
 .auth-footer {
   display: flex;
   justify-content: center;
-  gap: 16px;
+  gap: 12px;
   margin-top: 12px;
   font-size: 14px;
 }
@@ -160,3 +170,10 @@
 }
 
 
+/* ===== Sign Up Page ==== */
+.form-help {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-light);
+  margin-left: 4px;
+}
