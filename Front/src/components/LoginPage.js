@@ -126,12 +126,25 @@ class LoginPage extends Component {
           console.error('Cognito 로그인 오류:', err);
           
           const code = err?.code || err?.__type;
+          const message = err?.message || '';
+          
+          // User is disabled 메시지가 포함된 경우 특별 처리
+          if (code === 'NotAuthorizedException' && message.includes('User is disabled')) {
+            this.setState({
+              error: '탈퇴한 회원입니다.',
+              isLoading: false
+            });
+            return;
+          }
+          
           const map = {
             NotAuthorizedException: '사용자 이름 또는 비밀번호가 올바르지 않습니다.',
             UserNotConfirmedException: '계정이 확인되지 않았습니다. 이메일을 확인해주세요.',
             UserNotFoundException: '존재하지 않는 사용자입니다.',
             PasswordResetRequiredException: '비밀번호 재설정이 필요합니다. "비밀번호 찾기"를 이용하세요.',
             NEW_PASSWORD_REQUIRED: '새 비밀번호가 필요합니다. 관리자에 문의하세요.',
+            UserLambdaValidationException: '탈퇴한 회원입니다.',
+            InvalidUserPoolConfigurationException: '탈퇴한 회원입니다.',
           };
           
           this.setState({

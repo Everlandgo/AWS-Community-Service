@@ -18,8 +18,73 @@ from PIL import Image
 import io
 from datetime import datetime
 from functools import wraps
+from base64 import urlsafe_b64decode
 
 bp = Blueprint('api', __name__, url_prefix='/api/v1')
+# ============================================================================
+# 사용자 계정 비활성화 (탈퇴)
+# ============================================================================
+
+@bp.route('/users/me/deactivate', methods=['OPTIONS'])
+def deactivate_me_options():
+    # 프리플라이트 요청에 204 반환
+    return ('', 204)
+
+@bp.route('/users/me/deactivate', methods=['POST'])
+def deactivate_me():
+    """계정 비활성화: Cognito AdminDisableUser + DB is_active=false"""
+    try:
+        # 1) Authorization 헤더에서 JWT 추출
+        auth = request.headers.get('Authorization', '')
+        if not auth.startswith('Bearer '):
+            return api_error("인증이 필요합니다", 401)
+
+        token = auth.split(' ', 1)[1].strip()
+
+        # 2) JWT payload 디코드 (검증 없이 단순 파싱)
+        def _decode_jwt_payload(jwt_token):
+            try:
+                parts = jwt_token.split('.')
+                if len(parts) < 2:
+                    return None
+                payload_b64 = parts[1]
+                padding = '=' * (-len(payload_b64) % 4)
+                payload_json = urlsafe_b64decode(payload_b64 + padding).decode('utf-8')
+                return json.loads(payload_json)
+            except Exception:
+                return None
+
+        payload = _decode_jwt_payload(token)
+        if not payload:
+            return api_error("토큰 파싱에 실패했습니다", 400)
+
+        username = payload.get('cognito:username') or payload.get('username')
+        if not username:
+            return api_error("토큰에 사용자명이 없습니다", 400)
+
+        if not USER_POOL_ID:
+            return api_error("서버 환경변수에 USER_POOL_ID가 없습니다", 500)
+
+        # 3) Cognito 사용자 비활성화
+        cognito_client.admin_disable_user(UserPoolId=USER_POOL_ID, Username=username)
+
+        # 상태 확인
+        verify = cognito_client.admin_get_user(UserPoolId=USER_POOL_ID, Username=username)
+        enabled_flag = verify.get('Enabled', None)
+
+        # 4) 로컬 DB 사용자 비활성화 (있을 경우)
+        try:
+            user = User.query.filter_by(username=username).first()
+            if user:
+                user.is_active = False
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+        return api_response(data={ 'username': username, 'enabled': enabled_flag }, message="계정이 비활성화되었습니다")
+    except Exception as e:
+        current_app.logger.error(f"Error in deactivate_me: {str(e)}")
+        return api_error(f"계정 비활성화 중 오류: {str(e)}", 500)
 
 # AWS Cognito 설정
 cognito_client = boto3.client(
@@ -918,7 +983,7 @@ def login_user():
             return api_error("사용자명 또는 비밀번호가 올바르지 않습니다", 401)
         
         if not user.is_active:
-            return api_error("비활성화된 계정입니다", 401)
+            return api_error("탈퇴한 회원입니다", 401)
         
         # 로그인 성공 - 사용자 정보 반환
         user_data = user.to_dict()

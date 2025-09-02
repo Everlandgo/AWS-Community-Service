@@ -34,14 +34,14 @@ def create_app(config_class=None):
     app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
 
-    # CORS 설정
+    # CORS 설정 (OPTIONS 포함, credentials 허용)
     CORS(app, resources={
         r"/api/*": {
-            "origins": ["http://localhost:3000", "http://localhost:8080"],
-            "methods": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+            "origins": ["http://localhost:3000"],
+            "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization"]
         }
-    })
+    }, supports_credentials=True)
 
     # 데이터베이스 초기화
     db.init_app(app)

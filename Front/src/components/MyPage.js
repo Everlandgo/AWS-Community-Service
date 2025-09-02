@@ -92,6 +92,26 @@ class MyPage extends Component {
     }
   };
 
+  // 계정 비활성화(탈퇴)
+  handleDeactivateAccount = async () => {
+    const confirmed = window.confirm('정말로 탈퇴하시겠습니까? 탈퇴 시 로그인이 불가합니다.');
+    if (!confirmed) return;
+
+    try {
+      const ok = await UserService.deactivateAccount();
+      if (!ok) throw new Error('탈퇴 요청이 실패했습니다.');
+
+      // 세션 정리 및 로그인 페이지로 이동
+      clearExpiredTokens();
+      sessionStorage.removeItem('backendAccessToken');
+      alert('탈퇴가 완료되었습니다. 이용해주셔서 감사합니다.');
+      this.props.navigate('/login');
+    } catch (error) {
+      console.error('계정 비활성화 오류:', error);
+      alert(error.message || '탈퇴 처리 중 오류가 발생했습니다.');
+    }
+  };
+
   render() {
     const { userInfo, userPosts, isLoading, error } = this.state;
     const { currentUser, isLoggedIn } = this.props;
@@ -234,6 +254,17 @@ class MyPage extends Component {
                   </div>
                 </div>
               )}
+            </div>
+            {/* 계정 탈퇴 섹션 */}
+            <div className="user-deactivate-section" style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                className="auth-link"
+                style={{ color: '#9ca3af', fontSize: 12 }}
+                onClick={this.handleDeactivateAccount}
+                title="계정 비활성화"
+              >
+                계정 탈퇴
+              </button>
             </div>
           </div>
         </div>

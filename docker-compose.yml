@@ -65,6 +65,8 @@ services:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+
+
     volumes:
       - ./Post-master:/app
       - ./Post-master/uploads:/app/uploads
@@ -92,12 +94,12 @@ services:
       - FLASK_APP=app
       - FLASK_ENV=development
       - DATABASE_URL=mysql+pymysql://postuser:postpass@mysql:3306/commentdb   # ✅ 수정됨
-      - COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}
-      - COGNITO_REGION=${COGNITO_REGION}
-      - COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - COGNITO_USER_POOL_ID=ap-northeast-2_HnquQbxZ4
+      - COGNITO_REGION=ap-northeast-2
+      - COGNITO_CLIENT_ID=47fnsb2rstr5ssi0lb68r2jeat
+      - AWS_ACCESS_KEY_ID=AKIATSDMILGLR2XFXCLH
+      - AWS_SECRET_ACCESS_KEY=goMES700zElx2t1R5v7ezNtGcQThoujP
+      - AWS_DEFAULT_REGION=ap-northeast-2
     volumes:
       - ./Comment-master:/app
     depends_on:
@@ -115,13 +117,13 @@ services:
   # React 프론트엔드
   frontend:
     build: ./Front
-    container_name: post-frontend
+    container_name: frontend
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_COGNITO_USER_POOL_ID=${REACT_APP_COGNITO_USER_POOL_ID}
-      - REACT_APP_COGNITO_CLIENT_ID=${REACT_APP_COGNITO_CLIENT_ID}
-      - REACT_APP_COGNITO_REGION=${REACT_APP_COGNITO_REGION}
+      - REACT_APP_COGNITO_USER_POOL_ID=ap-northeast-2_HnquQbxZ4
+      - REACT_APP_COGNITO_CLIENT_ID=47fnsb2rstr5ssi0lb68r2jeat
+      - REACT_APP_COGNITO_REGION=ap-northeast-2
       - REACT_APP_API_URL=http://localhost:8081/api/v1
       - REACT_APP_COMMENT_SERVICE_URL=http://localhost:8083
       - REACT_APP_MINIO_URL=http://localhost:9000

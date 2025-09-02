@@ -44,7 +44,17 @@ class UserService {
       });
 
       if (!response.ok) {
-        throw new Error(`로그인 실패: ${response.status}`);
+        // 서버에서 반환한 에러 메시지 추출
+        let errorMessage = `로그인 실패: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          if (errorData?.message) {
+            errorMessage = errorData.message;
+          }
+        } catch (parseError) {
+          console.warn('에러 응답 파싱 실패:', parseError);
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -154,6 +164,43 @@ class UserService {
       return response.ok;
     } catch (error) {
       console.error('회원 탈퇴 오류:', error);
+      throw error;
+    }
+  }
+
+  // 계정 비활성화(탈퇴)
+  async deactivateAccount() {
+    try {
+      const url = `${this.baseURL}/api/v1/users/me/deactivate`;
+      console.log('[Deactivate] request URL:', url);
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        sessionStorage.removeItem('backendAccessToken');
+      }
+
+      if (!response.ok) {
+        // 서버가 상세 오류를 반환했다면 추출
+        let message = `계정 비활성화 실패: ${response.status}`;
+        try {
+          const data = await response.json();
+          if (data?.message) message = data.message;
+        } catch (_) {}
+        throw new Error(message);
+      }
+
+      return true;
+    } catch (error) {
+      // 네트워크/CORS/서버 다운 등 fetch 자체 실패 구분
+      if (error?.name === 'TypeError') {
+        console.error('계정 비활성화 네트워크 오류:', error);
+        throw new Error('서버에 연결할 수 없습니다. 네트워크 또는 CORS 설정을 확인해주세요.');
+      }
+      console.error('계정 비활성화 오류:', error);
       throw error;
     }
   }
