@@ -4,7 +4,6 @@ import { Mail, User, Lock, Eye, EyeOff, ArrowLeft, RefreshCw } from 'lucide-reac
 import CommonLayout from './CommonLayout';
 import { CognitoUserPool, CognitoUser, CognitoUserAttribute } from 'amazon-cognito-identity-js';
 import { userPool } from '../aws-config';
-import './SignupPage.css';
 
 class SignupPage extends Component {
   state = {
@@ -95,7 +94,7 @@ class SignupPage extends Component {
       this.setState({
         isLoading: false,
         currentStep: 2,
-        success: '인증 코드가 이메일로 전송되었습니다. 이메일을 확인하세요.',
+        success: '이메일을 확인해주세요.',
         usernameForCognito: cognitoUsername,
       });
     });
@@ -170,34 +169,40 @@ class SignupPage extends Component {
 
         <form className="auth-form" onSubmit={this.handleSignup}>
           <div className="form-group">
-            <label className="form-label"><Mail size={16} /> 이메일</label>
-            <input
-              type="email"
-              name="email"
-              value={email}
-              onChange={this.handleChange}
-              className="form-input"
-              placeholder="you@example.com"
-              required
-            />
+            <label className="form-label">이메일</label>
+            <div className="form-input-container">
+              <input
+                type="email"
+                name="email"
+                value={email}
+                onChange={this.handleChange}
+                className="form-input"
+                placeholder="you@example.com"
+                required
+              />
+              <p className='password-toggle'/>
+            </div>
           </div>
 
           <div className="form-group">
-            <label className="form-label"><User size={16} /> 사용자명</label>
-            <input
-              type="text"
-              name="username"
-              value={username}
-              onChange={this.handleChange}
-              className="form-input"
-              placeholder="원하는 사용자명"
-              required
-            />
+            <label className="form-label">사용자명</label>
+            <div className="form-input-container">
+              <input
+                type="text"
+                name="username"
+                value={username}
+                onChange={this.handleChange}
+                className="form-input"
+                placeholder="닉네임"
+                required
+              />
+              <p className='password-toggle'/>
+            </div>
           </div>
 
           <div className="form-group">
-            <label className="form-label"><Lock size={16} /> 비밀번호</label>
-            <div className="password-input-container">
+            <label className="form-label">비밀번호</label>
+            <div className="form-input-container">
               <input
                 type={showPassword ? 'text' : 'password'}
                 name="password"
@@ -215,8 +220,8 @@ class SignupPage extends Component {
           </div>
 
           <div className="form-group">
-            <label className="form-label"><Lock size={16} /> 비밀번호 확인</label>
-            <div className="password-input-container">
+            <label className="form-label">비밀번호 확인</label>
+            <div className="form-input-container">
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
                 name="confirmPassword"
@@ -239,7 +244,7 @@ class SignupPage extends Component {
 
         <div className="auth-footer">
           <button onClick={() => this.props.navigate('/login')} className="auth-link">
-            <ArrowLeft size={16} /> 로그인으로 돌아가기
+            <ArrowLeft size={16} /> 로그인
           </button>
         </div>
       </div>

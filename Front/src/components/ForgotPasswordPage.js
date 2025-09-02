@@ -210,7 +210,6 @@ class ForgotPasswordPage extends Component {
         <form className="auth-form" onSubmit={this.requestResetCode}>
           <div className="form-group">
             <label className="form-label">
-              <Mail size={16} />
               이메일 주소
             </label>
             <input
@@ -231,8 +230,7 @@ class ForgotPasswordPage extends Component {
 
         <div className="auth-footer">
           <button onClick={() => this.props.navigate('/login')} className="auth-link">
-            <ArrowLeft size={16} />
-            로그인으로 돌아가기
+            <ArrowLeft size={16} /> 로그인
           </button>
         </div>
       </div>
@@ -256,7 +254,7 @@ class ForgotPasswordPage extends Component {
       <div className="auth-container">
         <div className="auth-header">
           <h1 className="auth-title">새 비밀번호 설정</h1>
-          <p className="auth-subtitle">{email}로 전송된 인증 코드를 입력하고 새 비밀번호를 설정하세요.</p>
+          <p className="auth-subtitle">{email}으로 전송된 인증 코드를 입력하고 <br/>새 비밀번호를 설정하세요.</p>
         </div>
 
         {error && <div className="error-message">{error}</div>}
@@ -279,10 +277,9 @@ class ForgotPasswordPage extends Component {
 
           <div className="form-group">
             <label className="form-label">
-              <Lock size={16} />
               새 비밀번호
             </label>
-            <div className="password-input-container">
+            <div className="form-input-container">
               <input
                 type={showNewPassword ? 'text' : 'password'}
                 name="newPassword"
@@ -305,10 +302,9 @@ class ForgotPasswordPage extends Component {
 
           <div className="form-group">
             <label className="form-label">
-              <Lock size={16} />
               새 비밀번호 확인
             </label>
-            <div className="password-input-container">
+            <div className="form-input-container">
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
                 name="confirmPassword"
@@ -345,7 +341,13 @@ class ForgotPasswordPage extends Component {
 
   render() {
     return (
-      <CommonLayout isLoggedIn={false} currentUser={null} navigate={this.props.navigate}>
+      <CommonLayout 
+        isLoggedIn={false} 
+        currentUser={null} 
+        navigate={this.props.navigate}
+        hideSidebar={true} 
+        hideSearch={true}
+      >
         <div className="auth-page">
           {this.state.currentStep === 1 ? this.renderStep1() : this.renderStep2()}
         </div>
