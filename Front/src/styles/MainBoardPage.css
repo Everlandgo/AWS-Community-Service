@@ -70,9 +70,9 @@
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s, box-shadow 0.2s;
   border: 1px solid var(--darker-bg);
 }
+
 
 /* 테이블 해더 */
 .table-header {
