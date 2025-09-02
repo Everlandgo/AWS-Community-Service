@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowLeft, User as UserIcon } from 'lucide-react';
 import CommonLayout from './CommonLayout';
 import { CognitoUser } from 'amazon-cognito-identity-js';
 import { userPool } from '../aws-config';
@@ -8,7 +8,8 @@ class ForgotPasswordPage extends Component {
   constructor(props) {
           super(props);
       this.state = {
-        // 1단계 입력(이메일)
+        // 1단계 입력(username + 이메일)
+        username: '',
         email: '',
  
         // 2단계 입력
@@ -19,7 +20,7 @@ class ForgotPasswordPage extends Component {
         showConfirmPassword: false,
  
         // 내부 상태
-        usernameForCognito: '',           // ← email을 username으로 변환해 저장
+        usernameForCognito: '',           // ← 입력한 username을 저장
         currentStep: 1,                   // 1: 코드요청, 2: 비번변경
         isLoading: false,
         error: null,
@@ -47,33 +48,39 @@ class ForgotPasswordPage extends Component {
   };
 
   /**
-   * (선택) 백엔드에 email→username 조회 API가 있을 경우 사용
-   * .env: REACT_APP_USERNAME_LOOKUP_URL (ex. http://localhost:8081/internal/cognito/username?email=)
-   * 응답 예: { "username": "admin" }
+   * (선택) 백엔드에서 username+email 매핑 검증 API가 있을 경우 사용
+   * .env: REACT_APP_USERNAME_EMAIL_VERIFY_URL (POST, body: { username, email })
+   * 응답 예: { "valid": true }
    */
-  resolveUsernameFromEmail = async (email) => {
-    const base = process.env.REACT_APP_USERNAME_LOOKUP_URL;
-    if (!base) return email; // 백엔드 없이도 동작: email 자체를 Username으로 사용(Email 로그인/alias 허용 풀에서 유효)
+  verifyUsernameEmail = async (username, email) => {
+    const base = process.env.REACT_APP_USERNAME_EMAIL_VERIFY_URL;
+    if (!base) return true; // 백엔드 검증이 없으면 프론트만으로 진행
     try {
-      const res = await fetch(`${base}${encodeURIComponent(email)}`, { method: 'GET' });
-      if (!res.ok) return email;
+      const res = await fetch(base, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email })
+      });
+      if (!res.ok) return false;
       const data = await res.json().catch(() => ({}));
-      return data?.username || email;
+      return data?.valid !== false;
     } catch {
-      return email;
+      return false;
     }
   };
 
   // ===== 1단계: 인증코드 발송 =====
   requestResetCode = async (e) => {
     e.preventDefault();
-    const { email } = this.state;
+    const { username, email } = this.state;
 
+    if (!username) return this.setState({ error: '사용자명을 입력해주세요.' });
     if (!email) return this.setState({ error: '이메일을 입력해주세요.' });
     if (!this.validateEmail(email)) return this.setState({ error: '유효한 이메일 형식을 입력해주세요.' });
 
     // 디버깅을 위한 로깅 추가
     console.log('비밀번호 재설정 요청 시작:', {
+      username,
       email,
       userPool: userPool.getUserPoolId(),
       clientId: userPool.getClientId()
@@ -82,8 +89,12 @@ class ForgotPasswordPage extends Component {
     this.setState({ isLoading: true, error: null, success: null });
 
     try {
-      // 1) 이메일로부터 Cognito Username 추출(백엔드가 있으면 admin 같은 실제 username 반환)
-      const username = await this.resolveUsernameFromEmail(email);
+      // (선택) 서버에서 username+email 매핑 검증
+      const verified = await this.verifyUsernameEmail(username, email);
+      if (!verified) {
+        this.setState({ isLoading: false, error: '입력한 사용자명과 이메일이 일치하지 않습니다.' });
+        return;
+      }
 
       // 2) Cognito forgotPassword 호출
       const user = new CognitoUser({ Username: username, Pool: userPool });
@@ -92,7 +103,7 @@ class ForgotPasswordPage extends Component {
           this.setState({
             isLoading: false,
             currentStep: 2,
-            success: '인증 코드가 이메일로 발송되었습니다.',
+            success: '인증 코드가 등록된 이메일로 발송되었습니다.',
             usernameForCognito: username,
           });
         },
@@ -108,7 +119,7 @@ class ForgotPasswordPage extends Component {
           });
           
           const map = {
-            UserNotFoundException: '해당 이메일의 사용자를 찾을 수 없습니다.',
+            UserNotFoundException: '해당 사용자명을 찾을 수 없습니다.',
             CodeDeliveryFailureException: '이메일 발송에 실패했습니다. Cognito 설정을 확인하세요.',
             LimitExceededException: '요청 한도를 초과했습니다. 잠시 후 다시 시도하세요.',
             InvalidParameterException: '연락처(이메일)가 등록/검증되어 있지 않습니다.',
@@ -135,10 +146,10 @@ class ForgotPasswordPage extends Component {
   // ===== 2단계: 코드 + 새 비밀번호 확정 =====
   confirmNewPassword = async (e) => {
     e.preventDefault();
-    const { email, confirmationCode, newPassword, confirmPassword, usernameForCognito } = this.state;
+    const { confirmationCode, newPassword, confirmPassword, usernameForCognito } = this.state;
 
-    if (!email || !confirmationCode || !newPassword || !confirmPassword)
-      return this.setState({ error: '이메일/코드/새 비밀번호를 모두 입력해주세요.' });
+    if (!confirmationCode || !newPassword || !confirmPassword)
+      return this.setState({ error: '코드와 새 비밀번호를 모두 입력해주세요.' });
 
     if (newPassword !== confirmPassword)
       return this.setState({ error: '비밀번호가 일치하지 않습니다.' });
@@ -149,7 +160,7 @@ class ForgotPasswordPage extends Component {
       });
 
     // 1단계에서 저장해둔 usernameForCognito 사용 (백엔드 조회 결과 또는 이메일 그대로)
-    const username = usernameForCognito || email;
+    const username = usernameForCognito;
     const user = new CognitoUser({ Username: username, Pool: userPool });
 
     this.setState({ isLoading: true, error: null, success: null });
@@ -186,6 +197,7 @@ class ForgotPasswordPage extends Component {
   goBackToStep1 = () => {
     this.setState({
       currentStep: 1,
+      username: '',
       confirmationCode: '',
       newPassword: '',
       confirmPassword: '',
@@ -196,13 +208,13 @@ class ForgotPasswordPage extends Component {
 
   // ===== UI =====
   renderStep1() {
-    const { email, isLoading, error } = this.state;
+    const { username, email, isLoading, error } = this.state;
 
     return (
       <div className="auth-container">
         <div className="auth-header">
           <h1 className="auth-title">비밀번호 찾기</h1>
-          <p className="auth-subtitle">가입한 이메일 주소를 입력하시면 인증 코드를 보내드립니다.</p>
+          <p className="auth-subtitle">아이디와 이메일을 입력해주세요요.</p>
         </div>
 
         {error && <div className="error-message">{error}</div>}
@@ -210,8 +222,23 @@ class ForgotPasswordPage extends Component {
         <form className="auth-form" onSubmit={this.requestResetCode}>
           <div className="form-group">
             <label className="form-label">
+              <UserIcon size={16} />
+              ID
+            </label>
+            <input
+              type="text"
+              name="username"
+              value={username}
+              onChange={this.handleInputChange}
+              className="form-input"
+              placeholder="ID"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">
               <Mail size={16} />
-              이메일 주소
+              Email
             </label>
             <input
               type="email"
@@ -241,7 +268,6 @@ class ForgotPasswordPage extends Component {
 
   renderStep2() {
     const {
-      email,
       confirmationCode,
       newPassword,
       confirmPassword,
@@ -256,7 +282,7 @@ class ForgotPasswordPage extends Component {
       <div className="auth-container">
         <div className="auth-header">
           <h1 className="auth-title">새 비밀번호 설정</h1>
-          <p className="auth-subtitle">{email}로 전송된 인증 코드를 입력하고 새 비밀번호를 설정하세요.</p>
+          <p className="auth-subtitle">등록된 이메일로 전송된 인증 코드를 입력하고 새 비밀번호를 설정하세요.</p>
         </div>
 
         {error && <div className="error-message">{error}</div>}

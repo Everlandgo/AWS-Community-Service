@@ -29,7 +29,7 @@ export const cognitoConfig = {
 
 export const userPool = new CognitoUserPool(cognitoConfig);
 
-// (선택) 직접 비번 로그인 헬퍼 — Hosted UI만 쓸 경우 안 써도 됩니다.
+// 직접 비번 로그인 헬퍼 — Hosted UI만 쓸 경우 안 써도 됩니다.
 export function signIn(username, password) {
   return new Promise((resolve, reject) => {
     const user = new CognitoUser({ Username: username, Pool: userPool });

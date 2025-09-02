@@ -180,7 +180,7 @@ class LoginPage extends Component {
             <form className="auth-form" onSubmit={this.handleLogin}>
               <div className="form-group">
                 <label className="form-label">
-                  Email
+                  ID
                 </label>
                 <input
                   type="text"
@@ -195,7 +195,7 @@ class LoginPage extends Component {
 
               <div className="form-group">
                 <label className="form-label">
-                  PWD
+                  Password
                 </label>
                 <div className="password-input-container">
                   <input
