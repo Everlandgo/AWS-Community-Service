@@ -119,6 +119,8 @@
 
 /* Login Button */
 .auth-button {
+  align-content: center;
+  justify-content: center;
   width: 120px;
   margin: 12px 0;
   padding: 14px;
@@ -128,6 +130,7 @@
   color: var(--white);
   font-size: 16px;
   font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
   box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
 }
@@ -176,4 +179,11 @@
   font-weight: 400;
   color: var(--text-light);
   margin-left: 4px;
+}
+
+.error-message,
+.success-message {
+  font-size: 14px;
+  color: var(--subtitle);
+  padding-bottom: 12px;
 }

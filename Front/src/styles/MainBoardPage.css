@@ -66,8 +66,6 @@
 .posts-table {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  max-width: 1200px;
   background-color: var(--white);
   border-radius: 12px;
   padding: 24px;

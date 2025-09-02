@@ -94,7 +94,7 @@ class SignupPage extends Component {
       this.setState({
         isLoading: false,
         currentStep: 2,
-        success: '인증 코드가 이메일로 전송되었습니다. 이메일을 확인하세요.',
+        success: '이메일을 확인해주세요.',
         usernameForCognito: cognitoUsername,
       });
     });
@@ -244,7 +244,7 @@ class SignupPage extends Component {
 
         <div className="auth-footer">
           <button onClick={() => this.props.navigate('/login')} className="auth-link">
-            <ArrowLeft size={16} /> 로그인으로 돌아가기
+            <ArrowLeft size={16} /> 로그인
           </button>
         </div>
       </div>
