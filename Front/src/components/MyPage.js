@@ -278,10 +278,9 @@ class MyPage extends Component {
               )}
             </div>
             {/* 계정 탈퇴 섹션 */}
-            <div className="user-deactivate-section" style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+            <div className="delete-user-section" style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
               <button
-                className="auth-link"
-                style={{ color: '#9ca3af', fontSize: 12 }}
+                className="delete-user-btn"
                 onClick={this.handleDeactivateAccount}
                 title="계정 비활성화"
               >
