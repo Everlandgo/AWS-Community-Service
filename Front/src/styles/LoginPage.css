@@ -1,35 +1,4 @@
-/* CSS 변수 정의 */
-:root {
-  --default-bg: #d6dee7;
-  --darker-bg: #c8cfd6;
-  --dark-navy: #3e4a5b;
-  --darker-navy: #353f4d;
-  --black-navy: #1f242b;
-  --white-shine: #fff;
-  --white: #fafafa;
-  --white-shadow: #ececec;
-  --text-default: #1e293b;
-  --text-light: #2c384a;
-  --placeholder-grey: #707274d8;
-  --placeholder-white: #eff2f5d8;
-  --title: #1e293b;
-  --subtitle: #485362;
-  --posttitle: #1d2025;
-  --primary: hsl(222.2 47.4% 11.2%);
-  --primary-foreground: hsl(210 40% 98%);
-  --secondary: hsl(210 40% 96%);
-  --secondary-foreground: hsl(222.2 84% 4.9%);
-  --muted: hsl(210 40% 96%);
-  --muted-foreground: hsl(215.4 16.3% 46.9%);
-  --accent: hsl(210 40% 96%);
-  --accent-foreground: hsl(222.2 84% 4.9%);
-  --destructive: hsl(0 84.2% 60.2%);
-  --destructive-foreground: hsl(210 40% 98%);
-  --border: hsl(214.3 31.8% 91.4%);
-  --input: hsl(214.3 31.8% 91.4%);
-  --ring: hsl(222.2 84% 4.9%);
-  --radius: 0.625rem;
-}
+@import url(../index.css);
 
 /* Overall Page Layout */
 .auth-page {
@@ -80,66 +49,78 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  max-width: 600px;
+  padding: 0 8px;
   gap: 12px;
 }
 
 .form-group {
-  width: 90%; /* Fixed width relative to parent container */
+  width: 100%; /* Fixed width relative to parent container */
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  background-color: var(--darker-bg);
-  border-radius: 999px;
-  padding: 2px 16px;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 2px 0;
+  gap: 4px;
 }
 
 .form-label {
-  width: 20px;
+  margin-left: 16px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--white-shine);
-  min-width: 40px; /* Fixed width for label to align inputs */
+  color: var(--subtitle);
+}
+
+.form-input-container {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
 }
 
 .form-input {
   flex-grow: 1; /* Input takes up remaining space */
   width: 100%;
   padding: 12px 20px;
-  margin: 2px 12px;
+  margin: 2px 0;
   border: none;
-  border-radius: 9999px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
   font-size: 16px;
   color: #1e293b;
-  background-color: var(--color-darker-bg);
+  background-color: var(--white-shadow);
   transition: background-color 0.2s;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); /* Inner shadow for depth */
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .form-input:focus {
   outline: none;
-  background-color: var(--default-bg);
+  background-color: var(--white);
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
 
 .form-input::placeholder {
-  color: var(--placeholder-white);
+  color: var(--placeholder-grey);
   font-size: 14px;
 }
 
-.password-input-container {
-  display: flex;
-  flex-direction: row;
-}
-
 .password-toggle {
-  width: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  padding: 0 4px;
   border: none;
   background-color: transparent;
-  color: var(--white-shine);
+  color: var(--subtitle);
+  cursor: pointer;
 }
 
 /* Login Button */
 .auth-button {
+  align-content: center;
+  justify-content: center;
   width: 120px;
   margin: 12px 0;
   padding: 14px;
@@ -149,6 +130,7 @@
   color: var(--white);
   font-size: 16px;
   font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
   box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
 }
@@ -162,7 +144,7 @@
 .auth-footer {
   display: flex;
   justify-content: center;
-  gap: 16px;
+  gap: 12px;
   margin-top: 12px;
   font-size: 14px;
 }
@@ -191,3 +173,17 @@
 }
 
 
+/* ===== Sign Up Page ==== */
+.form-help {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-light);
+  margin-left: 4px;
+}
+
+.error-message,
+.success-message {
+  font-size: 14px;
+  color: var(--subtitle);
+  padding-bottom: 12px;
+}

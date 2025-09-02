@@ -1,33 +1,4 @@
-:root {
-  --default-bg: #d6dee7;
-  --darker-bg: #c8cfd6;
-  --dark-navy: #3e4a5b;
-  --darker-navy: #353f4d;
-  --white-shine: #fff;
-  --white: #fafafa;
-  --white-shadow: #ececec;
-  --text-default: #1e293b;
-  --text-light: #2c384a;
-  --placeholder-grey: #707274d8;
-  --placeholder-white: #eff2f5d8;
-  --title: #1e293b;
-  --subtitle: #485362;
-  --posttitle: #1d2025;
-  --primary: hsl(222.2 47.4% 11.2%);
-  --primary-foreground: hsl(210 40% 98%);
-  --secondary: hsl(210 40% 96%);
-  --secondary-foreground: hsl(222.2 84% 4.9%);
-  --muted: hsl(210 40% 96%);
-  --muted-foreground: hsl(215.4 16.3% 46.9%);
-  --accent: hsl(210 40% 96%);
-  --accent-foreground: hsl(222.2 84% 4.9%);
-  --destructive: hsl(0 84.2% 60.2%);
-  --destructive-foreground: hsl(210 40% 98%);
-  --border: hsl(214.3 31.8% 91.4%);
-  --input: hsl(214.3 31.8% 91.4%);
-  --ring: hsl(222.2 84% 4.9%);
-  --radius: 0.625rem;
-}
+@import url(../index.css);
 
 /* Topbar */
 .filter-section {
@@ -99,9 +70,9 @@
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s, box-shadow 0.2s;
   border: 1px solid var(--darker-bg);
 }
+
 
 /* 테이블 해더 */
 .table-header {

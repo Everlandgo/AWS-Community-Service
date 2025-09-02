@@ -20,7 +20,7 @@ class PostDetails extends Component {
       post: null,
       isLoading: true,
       error: null,
-      activeCategory: "전체",
+      activeCategory: "ALL",
       isLiked: false, // 좋아요 상태
       comments: [], // 댓글 목록을 저장할 상태
       newComment: "", // 새 댓글 내용을 저장할 상태
@@ -28,7 +28,7 @@ class PostDetails extends Component {
       editingCommentId: null, // 현재 수정 중인 댓글 ID
       editingContent: "" // 수정 중인 내용
     };
-    this.categories = ["전체", "동물/반려동물", "여행", "건강/헬스", "연예인"];
+    this.categories = ["ALL", "동물/반려동물", "여행", "건강/헬스", "연예인"];
   }
 
   componentDidMount() {
@@ -388,7 +388,8 @@ class PostDetails extends Component {
         isLoggedIn={isLoggedIn}
         currentUser={this.props.currentUser}
         navigate={this.props.navigate}
-        activeCategory={post.category || '전체'}
+        hideSearch={true}
+        activeCategory={post.category || 'ALL'}
         onCategoryChange={(category) => {
           this.props.navigate(`/?category=${encodeURIComponent(category)}`);
         }}
@@ -404,487 +405,141 @@ class PostDetails extends Component {
           </button>
         </div>
 
-        {/* 게시글 상세 내용 */}
-        <article className="post-detail-card">
-          {/* 맨 위: 카테고리 */}
-          <div className="post-category-header">
-            <span className="category-tag">{post.category || '미분류'}</span>
-          </div>
-
-          {/* 제목과 작성시간 */}
-          <div className="post-title-section">
-            <h1 className="post-title">{post.title}</h1>
-            <div className="post-creation-time">
-              {new Date(post.created_at).toLocaleString('ko-KR', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
+        <div className='post-detail-whole'>
+          {/* 게시글 상세 내용 */}
+          <article className="post-detail-card">
+            {/* 맨 위: 카테고리 */}
+            <div className="post-category-header">
+              <span className="category-tag">{post.category || '미분류'}</span>
             </div>
-          </div>
 
-          {/* 닉네임과 통계 정보 */}
-          <div className="post-meta-section">
-            <div className="post-author">
-              {post.author || 'Anonymous'}
+            {/* 제목과 작성시간 */}
+            <div className="post-title-section">
+              <h1 className="post-title">{post.title}</h1>
+              <div className="post-creation-time">
+                {new Date(post.created_at).toLocaleString('ko-KR', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </div>
             </div>
-            <div className="post-stats">
-              <span className="stat-item">조회수 {post.view_count || 0}</span>
-              <span className="stat-item">좋아요 {post.like_count || 0}</span>
-              <span className="stat-item">댓글 {post.comment_count || 0}</span>
+
+            {/* 닉네임과 통계 정보 */}
+            <div className="post-meta-section">
+              <div className="post-author">
+                {post.author || 'Anonymous'}
+              </div>
+              <div className="post-stats">
+                <span className="stat-item">조회수 {post.view_count || 0}</span>
+                <span className="stat-item">좋아요 {post.like_count || 0}</span>
+                <span className="stat-item">댓글 {post.comment_count || 0}</span>
+              </div>
             </div>
-          </div>
 
-          {/* 게시글 내용 */}
-          <div className="post-content">
-            {post.content}
-          </div>
+            {/* 게시글 내용 */}
+            <div className="post-content">
+              {post.content}
+            </div>
 
-          {/* 하단: 좋아요 버튼과 좋아요 수 */}
-          <div className="post-actions">
-            <button 
-              className={`like-button ${isLiked ? 'liked' : ''}`}
-              onClick={this.handleLikeToggle}
-            >
-              <Heart size={20} />
-              {isLiked ? '좋아요 취소' : '좋아요'}
-            </button>
-            <span className="like-count">좋아요 {post.like_count || 0}</span>
-          </div>
-        </article>
+            {/* 하단: 좋아요 버튼과 좋아요 수 */}
+            <div className="post-actions">
+              <button 
+                className={`like-button ${isLiked ? 'liked' : ''}`}
+                onClick={this.handleLikeToggle}
+              >
+                <Heart size={20} />
+              </button>
+            </div>
+          </article>
 
-        {/* ✅ 통합: 댓글 섹션 추가 */}
-        <div className="comments-section">
-          <h2>댓글 ({comments.length})</h2>
-          
-          {/* 댓글 입력 폼 */}
-          {isLoggedIn && (
-            <form className="comment-form" onSubmit={this.handleCommentSubmit}>
-              <textarea
-                className="comment-input"
-                value={newComment}
-                onChange={this.handleCommentChange}
-                placeholder="댓글을 입력하세요..."
-                rows="3"
-              />
-              <button type="submit" className="comment-submit-btn">작성</button>
-            </form>
-          )}
-          
-          {/* 댓글 목록 */}
-          <div className="comments-list">
-            {comments.length > 0 ? (
-              comments.map((comment, index) => (
-                <div key={index} className="comment-item">
-                  <div className="comment-meta">
-                    <span className="comment-author">
-                      <User size={14} style={{ marginRight: '4px' }} />
-                      {comment.user_name || comment.author || 'Anonymous'}
-                    </span>
-                    <span className="comment-date">
-                      {new Date(comment.created_at).toLocaleString('ko-KR', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  </div>
-                  {this.state.editingCommentId === comment.id ? (
-                    <div className="comment-editing">
-                      <textarea
-                        className="comment-edit-input"
-                        rows="3"
-                        value={this.state.editingContent}
-                        onChange={this.handleEditChange}
-                      />
-                      <div className="comment-actions">
-                        <button type="button" className="comment-btn primary" onClick={() => this.handleEditSave(comment.id)}>저장</button>
-                        <button type="button" className="comment-btn" onClick={this.handleEditCancel}>취소</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="comment-content">
-                      {comment.content}
-                    </div>
-                  )}
-
-                  <div className="comment-footer">
-                    <div className="comment-like">
-                      <button
-                        type="button"
-                        className={`comment-like-btn ${this.state.commentLikeStatus[comment.id] ? 'liked' : ''}`}
-                        onClick={() => this.handleCommentLikeToggle(comment.id)}
-                        disabled={!isLoggedIn}
-                        title={!isLoggedIn ? '로그인이 필요합니다' : ''}
-                      >
-                        <Heart size={16} /> {this.state.commentLikeStatus[comment.id] ? '좋아요 취소' : '좋아요'}
-                      </button>
-                      <span className="comment-like-count">좋아요 {comment.like_count || 0}</span>
-                    </div>
-                    
-                                         {isLoggedIn && this.isOwner(comment) && this.state.editingCommentId !== comment.id && (
-                       <div className="comment-owner-actions">
-                         <button type="button" className="comment-btn" onClick={() => this.handleStartEdit(comment)}>수정</button>
-                         <button type="button" className="comment-btn" onClick={() => this.handleDelete(comment.id)}>삭제</button>
-                       </div>
-                     )}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="no-comments">아직 댓글이 없습니다.</p>
+          {/* ✅ 통합: 댓글 섹션 추가 */}
+          <div className="comments-section">
+            <h2>댓글 ({comments.length})</h2>
+            
+            {/* 댓글 입력 폼 */}
+            {isLoggedIn && (
+              <form className="comment-form" onSubmit={this.handleCommentSubmit}>
+                <textarea
+                  className="comment-input"
+                  value={newComment}
+                  onChange={this.handleCommentChange}
+                  placeholder="댓글을 입력하세요..."
+                  rows="1"
+                />
+                <button type="submit" className="comment-submit-btn">작성</button>
+              </form>
             )}
+            
+            {/* 댓글 목록 */}
+            <div className="comments-list">
+              {comments.length > 0 ? (
+                comments.map((comment, index) => (
+                  <div key={index} className="comment-item">
+                    <div className="comment-meta">
+                      <span className="comment-author">
+                        <User size={14} style={{ marginRight: '4px' }} />
+                        {comment.user_name || comment.author || 'Anonymous'}
+                      </span>
+                      <span className="comment-date">
+                        {new Date(comment.created_at).toLocaleString('ko-KR', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                    {this.state.editingCommentId === comment.id ? (
+                      <div className="comment-editing">
+                        <textarea
+                          className="comment-edit-input"
+                          rows="1"
+                          value={this.state.editingContent}
+                          onChange={this.handleEditChange}
+                        />
+                        <div className="comment-actions">
+                          <button type="button" className="comment-btn primary" onClick={() => this.handleEditSave(comment.id)}>저장</button>
+                          <button type="button" className="comment-btn" onClick={this.handleEditCancel}>취소</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="comment-content">
+                        {comment.content}
+                      </div>
+                    )}
+
+                    <div className="comment-footer">
+                      <div className="comment-like">
+                        <button
+                          type="button"
+                          className={`like-btn ${this.state.commentLikeStatus[comment.id] ? 'liked' : ''}`}
+                          onClick={() => this.handleCommentLikeToggle(comment.id)}
+                          disabled={!isLoggedIn}
+                          title={!isLoggedIn ? '로그인이 필요합니다' : ''}
+                        >
+                          <Heart size={16} /> 
+                        </button>
+                      </div>
+    
+                        {isLoggedIn && this.isOwner(comment) && this.state.editingCommentId !== comment.id && (
+                        <div className="comment-owner-actions">
+                          <button type="button" className="comment-btn" onClick={() => this.handleStartEdit(comment)}>수정</button>
+                          <button type="button" className="comment-btn" onClick={() => this.handleDelete(comment.id)}>삭제</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="no-comments">아직 댓글이 없습니다.</p>
+              )}
+            </div>
           </div>
         </div>
-
-        <style jsx>{`
-          .post-detail-card {
-            background: #f8f9fa;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            padding: 24px;
-            margin-top: 20px;
-            border: 1px solid #e9ecef;
-          }
-
-          .post-category-header {
-            margin-bottom: 16px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #dee2e6;
-          }
-
-          .category-tag {
-            background: var(--primary);
-            color: var(--primary-foreground);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-          }
-
-          .post-title-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 16px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #dee2e6;
-          }
-
-          .post-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1e293b;
-            margin: 0;
-            flex: 1;
-            margin-right: 16px;
-          }
-
-          .post-creation-time {
-            color: #64748b;
-            font-size: 14px;
-            white-space: nowrap;
-          }
-
-          .post-meta-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #dee2e6;
-          }
-
-          .post-author {
-            color: #475569;
-            font-weight: 500;
-          }
-
-          .post-stats {
-            display: flex;
-            gap: 20px;
-          }
-
-          .stat-item {
-            color: #64748b;
-            font-size: 14px;
-          }
-
-          .post-content {
-            font-size: 16px;
-            line-height: 1.7;
-            color: #334155;
-            margin-bottom: 24px;
-            white-space: pre-wrap;
-            word-break: break-word;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #dee2e6;
-          }
-
-          .post-actions {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding-top: 16px;
-          }
-
-          .like-button {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            color: #64748b;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 14px;
-            font-weight: 500;
-          }
-
-          .like-button:hover {
-            background: #e2e8f0;
-            border-color: #cbd5e1;
-          }
-
-          .like-button.liked {
-            background: #fecaca;
-            border-color: #fca5a5;
-            color: #dc2626;
-          }
-
-          .like-count {
-            color: #64748b;
-            font-size: 14px;
-            font-weight: 500;
-          }
-
-          .back-button-container {
-            margin-bottom: 20px;
-          }
-
-          .back-button {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 16px;
-            background: none;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            color: #64748b;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 14px;
-          }
-
-          .back-button:hover {
-            background: #f8fafc;
-            border-color: #cbd5e1;
-            color: #475569;
-          }
-
-          /* ✅ 통합: 댓글 섹션 스타일 추가 */
-          .comments-section {
-            background: #f8f9fa;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            padding: 24px;
-            margin-top: 20px;
-            border: 1px solid #e9ecef;
-          }
-
-          .comments-section h2 {
-            margin: 0 0 20px 0;
-            color: #1e293b;
-            font-size: 20px;
-            font-weight: 600;
-          }
-
-          .comment-form {
-            margin-bottom: 24px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #dee2e6;
-          }
-
-          .comment-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            font-size: 14px;
-            line-height: 1.5;
-            resize: vertical;
-            margin-bottom: 12px;
-            font-family: inherit;
-          }
-
-          .comment-input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-          }
-
-          .comment-submit-btn {
-            padding: 8px 16px;
-            background: #3b82f6;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s;
-          }
-
-          .comment-submit-btn:hover {
-            background: #2563eb;
-          }
-
-          .comments-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-          }
-
-          .comment-item {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 16px;
-          }
-
-          .comment-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-          }
-
-          .comment-author {
-            display: flex;
-            align-items: center;
-            color: #475569;
-            font-weight: 500;
-            font-size: 14px;
-          }
-
-          .comment-date {
-            color: #64748b;
-            font-size: 12px;
-          }
-
-          .comment-content {
-            color: #334155;
-            font-size: 14px;
-            line-height: 1.5;
-            white-space: pre-wrap;
-            word-break: break-word;
-          }
-
-          .comment-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-          }
-
-          .comment-like {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-          }
-
-          .comment-like-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            color: #64748b;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 13px;
-          }
-
-          .comment-like-btn:hover { background: #e2e8f0; }
-          .comment-like-btn.liked { background: #fecaca; border-color: #fca5a5; color: #dc2626; }
-
-          .comment-like-count { color: #64748b; font-size: 13px; }
-
-          .comment-owner-actions { display: flex; gap: 8px; }
-
-          .comment-btn {
-            padding: 6px 12px;
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            color: #475569;
-            cursor: pointer;
-            font-size: 13px;
-          }
-
-          .comment-btn.primary { background: #3b82f6; color: white; border-color: #2563eb; }
-          .comment-btn + .comment-btn { margin-left: 6px; }
-
-          .comment-editing { margin-top: 8px; }
-          .comment-edit-input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            font-size: 14px;
-            resize: vertical;
-          }
-
-          .no-comments {
-            text-align: center;
-            color: #64748b;
-            font-style: italic;
-            padding: 20px;
-          }
-
-          .loading, .error {
-            text-align: center;
-            padding: 60px 20px;
-            font-size: 16px;
-            color: #64748b;
-          }
-
-          .error {
-            color: #ef4444;
-          }
-
-          @media (max-width: 768px) {
-            .post-title-section {
-              flex-direction: column;
-              gap: 12px;
-            }
-
-            .post-meta-section {
-              flex-direction: column;
-              gap: 16px;
-              align-items: flex-start;
-            }
-
-            .post-stats {
-              gap: 16px;
-            }
-
-            .comment-meta {
-              flex-direction: column;
-              align-items: flex-start;
-              gap: 8px;
-            }
-          }
-        `}</style>
       </CommonLayout>
     );
   }

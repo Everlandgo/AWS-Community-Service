@@ -1,23 +1,22 @@
-/* ===== Community Site 실제 레이아웃 구조 ===== */
-
 /* CSS 변수 정의 */
 :root {
-  --card: hsl(0 0% 100%);
-  --card-foreground: hsl(222.2 84% 4.9%);
-  --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(222.2 84% 4.9%);
   --default-bg: #d6dee7;
   --darker-bg: #c8cfd6;
   --dark-navy: #3e4a5b;
   --darker-navy: #353f4d;
+  --black-navy: #1f242b;
+  --black: #090b0c;
   --white-shine: #fff;
   --white: #fafafa;
   --white-shadow: #ececec;
   --text-default: #1e293b;
+  --text-light: #2c384a;
   --placeholder-grey: #707274d8;
   --placeholder-white: #eff2f5d8;
   --title: #1e293b;
   --subtitle: #485362;
+  --posttitle: #1d2025;
+  --red-alert: #ad0d0d;
   --primary: hsl(222.2 47.4% 11.2%);
   --primary-foreground: hsl(210 40% 98%);
   --secondary: hsl(210 40% 96%);

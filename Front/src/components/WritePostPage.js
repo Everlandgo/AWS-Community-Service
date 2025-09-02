@@ -8,14 +8,66 @@ class WritePostPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      postId: null,
       title: "",
       content: "",
-      category: "전체",
+      category: "자유",
       isLoading: false,
       error: null
     };
-    this.categories = ["전체", "동물/반려동물", "여행", "건강/헬스", "연예인"];
+    this.categories = ["자유", "동물/반려동물", "여행", "건강/헬스", "연예인"];
   }
+
+  componentDidMount() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const postId = urlParams.get('edit'); // CHANGED TO 'edit'
+    
+    if (postId) {
+      this.setState({ postId });
+      this.fetchPostForEdit(postId);
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const newPostId = urlParams.get('edit'); // CHANGED TO 'edit'
+    
+    if (newPostId !== this.state.postId) {
+      if (newPostId) {
+        this.setState({ postId: newPostId });
+        this.fetchPostForEdit(newPostId);
+      } else {
+        this.setState({ postId: null, title: "", content: "", category: "자유" });
+      }
+    }
+  }
+  
+  fetchPostForEdit = async (postId) => {
+    this.setState({ isLoading: true });
+    try {
+      const response = await fetch(`http://localhost:8081/api/v1/posts/${postId}`);
+      if (!response.ok) {
+        throw new Error('게시글을 불러오는데 실패했습니다.');
+      }
+      const data = await response.json();
+      const post = data.post || data.data;
+      if (post) {
+        this.setState({
+          title: post.title,
+          content: post.content,
+          category: post.category,
+          isLoading: false
+        });
+      }
+    } catch (error) {
+      console.error('게시글 로드 오류:', error);
+      this.setState({
+        error: error.message,
+        isLoading: false
+      });
+    }
+  };
+
 
   handleInputChange = (field, value) => {
     this.setState({ [field]: value });
@@ -41,46 +93,48 @@ class WritePostPage extends Component {
     }
 
     this.setState({ isLoading: true, error: null });
-    
-    try {
-      // Cognito ID 토큰 가져오기
-      const token = this.props.currentUser?.id_token;
-      
-      console.log('현재 사용자 정보:', this.props.currentUser);
-      console.log('토큰 확인:', token);
-      
-      if (!token) {
-        throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
-      }
 
-              const response = await fetch('http://localhost:8081/api/v1/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          title: this.state.title.trim(),
-          content: this.state.content.trim(),
-          author: this.props.currentUser?.profile?.name || this.props.currentUser?.profile?.username || "Anonymous",
-          category: this.state.category
-        })
+    const { title, content, category, postId } = this.state;
+    const { currentUser } = this.props;
+
+    const postData = {
+      title,
+      content,
+      category,
+      // Add these fields for post creation/update
+      author_id: currentUser?.sub,
+      author: currentUser?.username || 'Guest',
+    };
+
+    let url = `http://localhost:8081/api/v1/posts`;
+    let method = 'POST';
+
+    if (postId) {
+      // If postId exists, it's an update operation
+      url = `http://localhost:8081/api/v1/posts/${postId}`;
+      method = 'PATCH';
+    }
+    try {
+      const response = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(postData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || '게시글 작성에 실패했습니다.');
+        throw new Error(errorData.message || '게시글 저장에 실패했습니다.');
       }
 
       const result = await response.json();
-      if (result.success) {
-        alert("게시글이 성공적으로 작성되었습니다!");
-        this.props.navigate('/');
-      } else {
-        throw new Error(result.message || '게시글 작성에 실패했습니다.');
-      }
+      console.log("게시글 저장 성공:", result);
+      alert(postId ? "게시글이 성공적으로 수정되었습니다." : "게시글이 성공적으로 작성되었습니다.");
+      
+      // Navigate back to the main board page
+      this.props.navigate('/');
+
     } catch (error) {
-      console.error('게시글 작성 오류:', error);
+      console.error('게시글 저장 오류:', error);
       this.setState({ error: error.message });
     } finally {
       this.setState({ isLoading: false });
@@ -99,7 +153,7 @@ class WritePostPage extends Component {
 
   render() {
     const { isLoggedIn, currentUser, profileImage } = this.props;
-    const { title, content, category, isLoading, error } = this.state;
+    const { postId, title, content, category, isLoading, error } = this.state;
 
     // 디버깅을 위한 로그
     console.log('WritePostPage 렌더링:', { isLoggedIn, currentUser });
@@ -162,6 +216,9 @@ class WritePostPage extends Component {
         isLoggedIn={isLoggedIn}
         currentUser={currentUser}
         navigate={this.props.navigate}
+        hideSearch={true}
+        onCategoryChange={this.handleCategoryChange}
+        onLogout={this.props.onLogout}
       >
         <div className="write-post-container">
           {/* 뒤로가기 버튼 */}
@@ -176,7 +233,7 @@ class WritePostPage extends Component {
           </div>
 
           <div className="write-post-header">
-            <h1 className="write-post-title">새 게시글 작성</h1>
+            <h1 className="write-post-title">{postId ? '게시글 수정' : '새 게시글 작성'}</h1>
             <div className="write-post-actions">
               <button
                 type="button"

@@ -176,6 +176,9 @@ class LoginPage extends Component {
         isLoggedIn={false}
         currentUser={null}
         navigate={this.props.navigate}
+        hideSidebar={true} 
+        hideSearch={true}
+        onCategoryChange={this.handleCategoryChange}
       >
         <div className="auth-page">
           <div className="auth-container">
@@ -195,22 +198,25 @@ class LoginPage extends Component {
                 <label className="form-label">
                   ID
                 </label>
-                <input
-                  type="text"
-                  name="username"
-                  value={username}
-                  onChange={this.handleInputChange}
-                  className="form-input"
-                  placeholder="이메일을 입력하세요"
-                  required
-                />
+                <div className='form-input-container'>
+                  <input
+                    type="text"
+                    name="username"
+                    value={username}
+                    onChange={this.handleInputChange}
+                    className="form-input"
+                    placeholder="이메일을 입력하세요"
+                    required
+                  />
+                  <p className='password-toggle'/>
+                </div>
               </div>
 
               <div className="form-group">
                 <label className="form-label">
                   Password
                 </label>
-                <div className="password-input-container">
+                <div className="form-input-container">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     name="password"
