@@ -589,7 +589,6 @@ class PostDetails extends Component {
               )}
             </div>
           </div>
-        </div>
       </CommonLayout>
     );
   }
