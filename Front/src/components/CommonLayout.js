@@ -78,11 +78,7 @@ const CommonLayout = ({ children, isLoggedIn, currentUser, navigate, hideSidebar
             {isLoggedIn ? (
               <div className="user-profile-section">
                 <div className="user-profile" onClick={handleUserClick} style={{ cursor: 'pointer' }}>
-                  {/* 디버깅용 콘솔 로그 */}
-                  {console.log('CommonLayout - currentUser:', currentUser)}
-                  {console.log('CommonLayout - currentUser.username:', currentUser?.username)}
-                  {console.log('CommonLayout - currentUser.sub:', currentUser?.sub)}
-                  {console.log('CommonLayout - currentUser.email:', currentUser?.email)}
+
                   
                   <div className="user-icon">
                     {currentUser?.username?.charAt(0)?.toUpperCase() || 

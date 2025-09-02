@@ -64,36 +64,29 @@ class App extends Component {
       const savedUser = sessionStorage.getItem('currentUser');
       const savedTokens = sessionStorage.getItem('cognitoTokens');
       
-      console.log('🔍 로그인 상태 복원 시도:', { 
-        hasSavedUser: !!savedUser, 
-        hasSavedTokens: !!savedTokens 
-      });
+
       
       if (savedUser && savedTokens) {
         const userData = JSON.parse(savedUser);
         const tokens = JSON.parse(savedTokens);
         
-        console.log('📋 저장된 토큰 정보:', {
-          id_token: !!tokens.id_token,
-          access_token: !!tokens.access_token,
-          refresh_token: !!tokens.refresh_token
-        });
+
         
         // 통일된 토큰 키로 유효성 검증
         if (tokens.id_token || tokens.access_token) {
-          console.log("✅ 저장된 로그인 상태 복원 성공:", userData);
+
           this.setState({
             currentUser: userData,
             isLoggedIn: true
           });
         } else {
           // 토큰이 유효하지 않으면 저장된 데이터 삭제
-          console.log("❌ 유효하지 않은 토큰으로 인해 로그인 상태 초기화");
+
           sessionStorage.removeItem('currentUser');
           sessionStorage.removeItem('cognitoTokens');
         }
       } else {
-        console.log('📝 저장된 로그인 정보 없음');
+
       }
     } catch (error) {
       console.error("❌ 로그인 상태 복원 실패:", error);
@@ -104,17 +97,7 @@ class App extends Component {
   };
 
   handleLogin = (userData) => {
-    console.log("Cognito 로그인 완료:", userData);
-    console.log("토큰 확인:", {
-      id_token: !!userData.id_token,
-      access_token: !!userData.access_token,
-      refresh_token: !!userData.refresh_token
-    });
-    console.log("🔐 App.js - 실제 토큰 값:", {
-      id_token: userData.id_token ? userData.id_token.substring(0, 20) + '...' : 'undefined',
-      access_token: userData.access_token ? userData.access_token.substring(0, 20) + '...' : 'undefined',
-      refresh_token: userData.refresh_token ? userData.refresh_token.substring(0, 20) + '...' : 'undefined'
-    });
+
     
     // 토큰이 있는지 확인
     if (!userData.id_token) {
@@ -154,22 +137,18 @@ class App extends Component {
     // sessionStorage에 사용자 정보 저장
     sessionStorage.setItem('currentUser', JSON.stringify(userWithTokens));
     
-    console.log("✅ 토큰 저장 완료:", {
-      cognitoTokens: !!sessionStorage.getItem('cognitoTokens'),
-      currentUser: !!sessionStorage.getItem('currentUser')
-    });
+
     
     // 저장된 토큰 내용 확인
     const savedTokens = sessionStorage.getItem('cognitoTokens');
     const savedUser = sessionStorage.getItem('currentUser');
-    console.log("✅ App.js - 저장된 cognitoTokens 내용:", savedTokens ? JSON.parse(savedTokens) : 'null');
-    console.log("✅ App.js - 저장된 currentUser 내용:", savedUser ? JSON.parse(savedUser) : 'null');
+
     
-    console.log("로그인 상태 업데이트 및 저장 완료:", this.state);
+
   };
 
   handleSignup = (userData) => {
-    console.log("Cognito 회원가입 완료:", userData);
+
     this.setState({
       currentUser: userData,
       isLoggedIn: true
@@ -200,12 +179,7 @@ class App extends Component {
   render() {
     const { posts, currentUser, isLoggedIn } = this.state;
 
-    // 사용자 정보 디버깅
-    console.log('=== App Render Debug ===');
-    console.log('App render - currentUser:', currentUser);
-    console.log('App render - isLoggedIn:', isLoggedIn);
-    console.log('App render - 토큰 확인:', currentUser?.id_token);
-    console.log('========================');
+
 
     return (
       <Router>

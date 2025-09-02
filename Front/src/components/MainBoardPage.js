@@ -29,7 +29,7 @@ class MainBoardPage extends Component {
     const categoryFromUrl = urlParams.get('category');
     
     if (categoryFromUrl && this.categories.includes(categoryFromUrl)) {
-      console.log('URL에서 카테고리 감지:', categoryFromUrl);
+
       this.setState({ activeCategory: categoryFromUrl });
       // 게시글이 로드된 후에 필터링 적용
       setTimeout(() => {

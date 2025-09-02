@@ -110,7 +110,7 @@ class LoginPage extends Component {
             storage: 'sessionStorage' 
           });
           
-          console.log('Cognito 로그인 성공:', userData);
+
           this.props.onLogin(userData);
           this.props.navigate('/');
         },

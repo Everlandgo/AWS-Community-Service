@@ -29,7 +29,7 @@ class CommentService {
           accessToken = tokens.access_token || tokens.id_token || tokens.accessToken || tokens.idToken;
           
           if (accessToken) {
-            console.log('CommentService: sessionStorage에서 직접 토큰 복구 성공');
+
             return {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${accessToken}`

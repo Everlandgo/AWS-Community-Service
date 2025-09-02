@@ -124,11 +124,7 @@ class WritePostPage extends Component {
     try {
       // JWT 토큰 가져오기
       const token = getCognitoToken();
-      console.log('🔐 WritePostPage - 토큰 확인:', {
-        hasToken: !!token,
-        tokenLength: token ? token.length : 0,
-        tokenPreview: token ? token.substring(0, 20) + '...' : 'null'
-      });
+
       
       const headers = {
         'Content-Type': 'application/json'
@@ -137,12 +133,12 @@ class WritePostPage extends Component {
       // 토큰이 있으면 Authorization 헤더 추가
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-        console.log('🔐 WritePostPage - Authorization 헤더 추가됨');
+
       } else {
         console.warn('⚠️ WritePostPage - 토큰이 없습니다!');
       }
       
-      console.log('🔐 WritePostPage - 최종 헤더:', headers);
+
 
       const response = await fetch(url, {
         method: method,
@@ -156,7 +152,7 @@ class WritePostPage extends Component {
       }
 
       const result = await response.json();
-      console.log("게시글 저장 성공:", result);
+
       alert(postId ? "게시글이 성공적으로 수정되었습니다." : "게시글이 성공적으로 작성되었습니다.");
       
       // Navigate back to the main board page
@@ -184,9 +180,7 @@ class WritePostPage extends Component {
     const { isLoggedIn, currentUser, profileImage } = this.props;
     const { postId, title, content, category, isLoading, error } = this.state;
 
-    // 디버깅을 위한 로그
-    console.log('WritePostPage 렌더링:', { isLoggedIn, currentUser });
-    console.log('현재 사용자 토큰:', currentUser?.id_token);
+
 
     if (!isLoggedIn) {
       return (

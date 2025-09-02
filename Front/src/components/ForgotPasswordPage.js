@@ -78,13 +78,7 @@ class ForgotPasswordPage extends Component {
     if (!email) return this.setState({ error: '이메일을 입력해주세요.' });
     if (!this.validateEmail(email)) return this.setState({ error: '유효한 이메일 형식을 입력해주세요.' });
 
-    // 디버깅을 위한 로깅 추가
-    console.log('비밀번호 재설정 요청 시작:', {
-      username,
-      email,
-      userPool: userPool.getUserPoolId(),
-      clientId: userPool.getClientId()
-    });
+
 
     this.setState({ isLoading: true, error: null, success: null });
 
@@ -110,13 +104,7 @@ class ForgotPasswordPage extends Component {
         onFailure: (err) => {
           console.error('forgotPassword error', err);
           
-          // 더 자세한 에러 로깅 추가
-          console.log('Error details:', {
-            code: err?.code,
-            name: err?.name,
-            message: err?.message,
-            stack: err?.stack
-          });
+
           
           const map = {
             UserNotFoundException: '해당 사용자명을 찾을 수 없습니다.',
@@ -172,13 +160,7 @@ class ForgotPasswordPage extends Component {
       onFailure: (err) => {
         console.error('confirmPassword error', err);
         
-        // 더 자세한 에러 로깅 추가
-        console.log('confirmPassword error details:', {
-          code: err?.code,
-          name: err?.name,
-          message: err?.message,
-          stack: err?.stack
-        });
+
         
         const map = {
           ExpiredCodeException: '인증 코드가 만료되었습니다. 코드를 다시 요청하세요.',

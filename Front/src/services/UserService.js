@@ -172,7 +172,7 @@ class UserService {
   async deactivateAccount() {
     try {
       const url = `${this.baseURL}/api/v1/users/me/deactivate`;
-      console.log('[Deactivate] request URL:', url);
+
       const response = await fetch(url, {
         method: 'POST',
         headers: this.getAuthHeaders(),

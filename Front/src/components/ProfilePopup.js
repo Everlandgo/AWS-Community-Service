@@ -27,9 +27,7 @@ class ProfilePopup extends Component {
   render() {
     const { currentUser, profileImage, setShowProfilePopup } = this.props;
 
-    // 사용자 정보 디버깅
-    console.log('ProfilePopup render - currentUser:', currentUser);
-    console.log('ProfilePopup render - profileImage:', profileImage);
+
 
     if (!this.props.showProfilePopup) {
       return null;

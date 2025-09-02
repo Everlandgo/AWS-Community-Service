@@ -35,7 +35,7 @@ export const setupTabCloseListener = () => {
 };
 
 export const logSessionEvent = (event, details) => {
-  console.log(`[Session] ${event}:`, details);
+
 };
 
 // Cognito JWT 토큰 가져오기 (sessionStorage 사용)
