@@ -7,28 +7,28 @@ resource "aws_security_group" "apigw_sg" {
   name        = "${var.project}-apigw-sg"
   description = "API Gateway VPC Link Security Group"
   vpc_id      = module.vpc.vpc_id
-  
+
   ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = [module.vpc.vpc_cidr_block]
   }
-  
+
   ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = [module.vpc.vpc_cidr_block]
   }
-  
+
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
   tags = {
     Project = var.project
     Env     = var.env
@@ -40,7 +40,7 @@ resource "aws_apigatewayv2_vpc_link" "vpclink" {
   name               = "${var.project}-vpclink"
   subnet_ids         = module.vpc.private_subnets
   security_group_ids = [aws_security_group.apigw_sg.id]
-  
+
   tags = {
     Project = var.project
     Env     = var.env
@@ -52,7 +52,7 @@ resource "aws_apigatewayv2_vpc_link" "vpclink" {
 resource "aws_apigatewayv2_api" "httpapi" {
   name          = "${var.project}-httpapi"
   protocol_type = "HTTP"
-  
+
   tags = {
     Project = var.project
     Env     = var.env
@@ -99,7 +99,7 @@ resource "aws_apigatewayv2_stage" "prod" {
   api_id      = aws_apigatewayv2_api.httpapi[0].id
   name        = "prod"
   auto_deploy = true
-  
+
   tags = {
     Project = var.project
     Env     = var.env

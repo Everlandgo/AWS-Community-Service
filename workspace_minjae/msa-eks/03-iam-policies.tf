@@ -6,7 +6,7 @@
 resource "aws_iam_policy" "eks_minimal_access" {
   name        = "${var.project}-eks-minimal-access"
   description = "Minimal EKS access policy for deployment user"
-  
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -34,7 +34,7 @@ resource "aws_iam_policy" "eks_minimal_access" {
       }
     ]
   })
-  
+
   tags = {
     Project = var.project
     Env     = var.env
@@ -45,7 +45,7 @@ resource "aws_iam_policy" "eks_minimal_access" {
 resource "aws_iam_policy" "eks_readonly" {
   name        = "${var.project}-eks-readonly"
   description = "EKS read-only access policy"
-  
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -117,7 +117,7 @@ resource "aws_iam_policy" "eks_readonly" {
       }
     ]
   })
-  
+
   tags = {
     Project = var.project
     Env     = var.env

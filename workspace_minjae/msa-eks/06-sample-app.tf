@@ -96,10 +96,10 @@ resource "kubernetes_ingress_v1" "sample_app" {
       app = "sample-app"
     }
     annotations = {
-      "kubernetes.io/ingress.class"                    = "nginx"
-      "nginx.ingress.kubernetes.io/rewrite-target"     = "/"
-      "external-dns.alpha.kubernetes.io/hostname"      = "api.${var.domain}"
-      "external-dns.alpha.kubernetes.io/ttl"           = "300"
+      "kubernetes.io/ingress.class"                = "nginx"
+      "nginx.ingress.kubernetes.io/rewrite-target" = "/"
+      "external-dns.alpha.kubernetes.io/hostname"  = "api.${var.domain}"
+      "external-dns.alpha.kubernetes.io/ttl"       = "300"
     }
   }
 

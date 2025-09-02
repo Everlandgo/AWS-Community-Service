@@ -37,34 +37,7 @@ resource "aws_s3_object" "index" {
 }
 
 # 2) ACM certificate in us-east-1 for CloudFront
-resource "aws_acm_certificate" "cf" {
-  provider          = aws.us_east_1
-  domain_name       = var.domain
-  validation_method = "DNS"
-  tags              = local.tags
-}
-
-resource "aws_route53_record" "cert_validation" {
-  for_each = {
-    for dvo in aws_acm_certificate.cf.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      record = dvo.resource_record_value
-      type   = dvo.resource_record_type
-    }
-  }
-
-  zone_id = data.aws_route53_zone.primary.zone_id
-  name    = each.value.name
-  type    = each.value.type
-  ttl     = 60
-  records = [each.value.record]
-}
-
-resource "aws_acm_certificate_validation" "cf" {
-  provider                = aws.us_east_1
-  certificate_arn         = aws_acm_certificate.cf.arn
-  validation_record_fqdns = [for r in aws_route53_record.cert_validation : r.fqdn]
-}
+// Using existing ACM certificate ARN provided via variable
 
 # 3) CloudFront with OAC
 resource "aws_cloudfront_origin_access_control" "oac" {
@@ -101,7 +74,7 @@ resource "aws_cloudfront_distribution" "this" {
 
     viewer_protocol_policy = "redirect-to-https"
 
-    compress = true
+    compress        = true
     cache_policy_id = data.aws_cloudfront_cache_policy.caching_optimized.id
   }
 
@@ -110,7 +83,7 @@ resource "aws_cloudfront_distribution" "this" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = aws_acm_certificate_validation.cf.certificate_arn
+    acm_certificate_arn      = var.acm_certificate_arn
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
   }

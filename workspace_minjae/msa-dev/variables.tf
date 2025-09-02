@@ -2,57 +2,51 @@ variable "project" {
   type    = string
   default = "msa-forum"
 }
+
 variable "env" {
   type    = string
   default = "dev"
+}
+
+variable "az" {
+  type        = string
+  default     = "ap-northeast-2a"
+  description = "Single availability zone to use for all subnets"
 }
 
 variable "domain" {
   type    = string
   default = "hhottdogg.shop"
 }
+
 variable "service_domain" {
   type    = string
   default = "www.hhottdogg.shop"
 }
+
 variable "web_bucket_name" {
   type    = string
   default = "karina-winter"
 }
-variable "hosted_zone_id" {
-  type    = string
-  default = "Z07840551WEY8ZLTWDLBJ"
-}
 
-variable "enable_apigw" {
-  type    = bool
-  default = false
-}
 variable "enable_web" {
-  type    = bool
-  default = false
-}
-
-variable "enable_addons" {
   type    = bool
   default = true
 }
 
-variable "cognito_user_pool_name" {
-  type    = string
-  default = "sungjuntest"
+variable "enable_apigw" {
+  type    = bool
+  default = true
 }
 
 variable "cognito_user_pool_id" {
   type        = string
-  default     = "ap-northeast-2_HnquQbxZ4"
-  description = "Optional. If set, JWT Authorizer will be configured using this User Pool ID."
+  default     = ""
+  description = "Optional: existing User Pool ID for JWT authorizer"
 }
 
 variable "cognito_app_client_id" {
   type        = string
-  default     = "47fnsb2rstr5ssi0lb68r2jeat"
-  description = "Optional. App client ID for JWT authorizer audience."
+  default     = ""
+  description = "Optional: existing App Client ID for JWT authorizer"
 }
-
-

@@ -1,33 +1,10 @@
-############################
-# Lambda + HTTP API (v2)
-############################
-
 locals {
   cors_allowed_origins = ["https://${var.service_domain}"]
 }
 
-data "archive_file" "lambda_health_zip" {
-  type        = "zip"
-  source_dir  = "${path.module}/lambda/health"
-  output_path = "${path.module}/lambda/health.zip"
-}
-
-data "archive_file" "lambda_me_zip" {
-  type        = "zip"
-  source_dir  = "${path.module}/lambda/me"
-  output_path = "${path.module}/lambda/me.zip"
-}
-
 resource "aws_iam_role" "lambda_exec" {
-  name = "${var.project}-${var.env}-lambda-exec"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action    = "sts:AssumeRole",
-      Effect    = "Allow",
-      Principal = { Service = "lambda.amazonaws.com" }
-    }]
-  })
+  name               = "${var.project}-${var.env}-lambda-exec"
+  assume_role_policy = jsonencode({ Version = "2012-10-17", Statement = [{ Action = "sts:AssumeRole", Effect = "Allow", Principal = { Service = "lambda.amazonaws.com" } }] })
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_basic" {
@@ -36,25 +13,23 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
 }
 
 resource "aws_lambda_function" "health" {
-  filename         = data.archive_file.lambda_health_zip.output_path
+  filename         = "${path.module}/lambda/health.zip"
   function_name    = "${var.project}-${var.env}-health"
   role             = aws_iam_role.lambda_exec.arn
   handler          = "index.handler"
   runtime          = "nodejs20.x"
-  source_code_hash = data.archive_file.lambda_health_zip.output_base64sha256
+  source_code_hash = filebase64sha256("${path.module}/lambda/health.zip")
   timeout          = 5
-  environment { variables = { STAGE = var.env } }
 }
 
 resource "aws_lambda_function" "me" {
-  filename         = data.archive_file.lambda_me_zip.output_path
+  filename         = "${path.module}/lambda/me.zip"
   function_name    = "${var.project}-${var.env}-me"
   role             = aws_iam_role.lambda_exec.arn
   handler          = "index.handler"
   runtime          = "nodejs20.x"
-  source_code_hash = data.archive_file.lambda_me_zip.output_base64sha256
+  source_code_hash = filebase64sha256("${path.module}/lambda/me.zip")
   timeout          = 5
-  environment { variables = { STAGE = var.env } }
 }
 
 resource "aws_apigatewayv2_api" "httpapi" {
@@ -62,8 +37,8 @@ resource "aws_apigatewayv2_api" "httpapi" {
   name          = "${var.project}-httpapi"
   protocol_type = "HTTP"
   cors_configuration {
-    allow_headers = ["Authorization", "Content-Type"]
-    allow_methods = ["GET", "OPTIONS"]
+    allow_headers = ["Authorization","Content-Type"]
+    allow_methods = ["GET","OPTIONS"]
     allow_origins = local.cors_allowed_origins
   }
   tags = { Project = var.project, Env = var.env }
@@ -91,40 +66,13 @@ resource "aws_apigatewayv2_route" "health" {
   target    = "integrations/${aws_apigatewayv2_integration.lambda_health[0].id}"
 }
 
-resource "aws_lambda_permission" "apigw_invoke" {
+resource "aws_lambda_permission" "apigw_health" {
   count         = var.enable_apigw ? 1 : 0
-  statement_id  = "AllowInvokeFromAPIGW"
+  statement_id  = "AllowInvokeFromAPIGWHealth"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.health.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.httpapi[0].execution_arn}/*/*"
-  depends_on    = [aws_apigatewayv2_api.httpapi]
-}
-
-resource "aws_lambda_permission" "apigw_invoke_me" {
-  count         = var.enable_apigw ? 1 : 0
-  statement_id  = "AllowInvokeFromAPIGWMe"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.me.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.httpapi[0].execution_arn}/*/*"
-  depends_on    = [aws_apigatewayv2_api.httpapi]
-}
-
-############################
-# Cognito + JWT Authorizer (via variables)
-############################
-
-resource "aws_apigatewayv2_authorizer" "jwt" {
-  count            = var.enable_apigw && var.cognito_user_pool_id != "" && var.cognito_app_client_id != "" ? 1 : 0
-  api_id           = aws_apigatewayv2_api.httpapi[0].id
-  authorizer_type  = "JWT"
-  identity_sources = ["$request.header.Authorization"]
-  name             = "cognito-jwt"
-  jwt_configuration {
-    audience = [var.cognito_app_client_id]
-    issuer   = "https://cognito-idp.${var.region}.amazonaws.com/${var.cognito_user_pool_id}"
-  }
 }
 
 resource "aws_apigatewayv2_integration" "lambda_me" {
@@ -133,6 +81,18 @@ resource "aws_apigatewayv2_integration" "lambda_me" {
   integration_type       = "AWS_PROXY"
   integration_uri        = aws_lambda_function.me.invoke_arn
   payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_authorizer" "jwt" {
+  count               = var.enable_apigw && var.cognito_user_pool_id != "" && var.cognito_app_client_id != "" ? 1 : 0
+  api_id              = aws_apigatewayv2_api.httpapi[0].id
+  authorizer_type     = "JWT"
+  identity_sources    = ["$request.header.Authorization"]
+  name                = "cognito-jwt"
+  jwt_configuration {
+    audience = [var.cognito_app_client_id]
+    issuer   = "https://cognito-idp.ap-northeast-2.amazonaws.com/${var.cognito_user_pool_id}"
+  }
 }
 
 resource "aws_apigatewayv2_route" "me" {
@@ -144,12 +104,13 @@ resource "aws_apigatewayv2_route" "me" {
   authorizer_id      = aws_apigatewayv2_authorizer.jwt[0].id
 }
 
-output "httpapi_invoke_url" {
-  value       = var.enable_apigw && length(aws_apigatewayv2_api.httpapi) > 0 ? aws_apigatewayv2_api.httpapi[0].api_endpoint : null
-  description = "API Gateway HTTP API base endpoint (default stage)"
+resource "aws_lambda_permission" "apigw_me" {
+  count         = var.enable_apigw && var.cognito_user_pool_id != "" && var.cognito_app_client_id != "" ? 1 : 0
+  statement_id  = "AllowInvokeFromAPIGWMe"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.me.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.httpapi[0].execution_arn}/*/*"
 }
 
-output "cognito_user_pool_id" { value = var.cognito_user_pool_id != "" ? var.cognito_user_pool_id : null }
-output "cognito_app_client_id" { value = var.cognito_app_client_id != "" ? var.cognito_app_client_id : null }
-
-
+output "dev_httpapi_invoke_url" { value = var.enable_apigw && length(aws_apigatewayv2_api.httpapi) > 0 ? aws_apigatewayv2_api.httpapi[0].api_endpoint : null }

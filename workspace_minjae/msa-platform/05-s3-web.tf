@@ -18,12 +18,12 @@ resource "aws_s3_bucket_public_access_block" "web" {
 }
 
 resource "aws_acm_certificate" "web" {
-  count             = var.enable_web ? 1 : 0
-  provider          = aws.us_east_1
-  domain_name       = var.domain
+  count                     = var.enable_web ? 1 : 0
+  provider                  = aws.us_east_1
+  domain_name               = var.domain
   subject_alternative_names = [var.service_domain]
-  validation_method = "DNS"
-  tags              = local.web_tags
+  validation_method         = "DNS"
+  tags                      = local.web_tags
 }
 
 data "aws_route53_zone" "primary" {
@@ -39,11 +39,11 @@ resource "aws_route53_record" "web_cert" {
     value = dvo.resource_record_value
   } } : {}
 
-  zone_id = data.aws_route53_zone.primary[0].zone_id
-  name    = each.value.name
-  type    = each.value.type
-  records = [each.value.value]
-  ttl     = 60
+  zone_id         = data.aws_route53_zone.primary[0].zone_id
+  name            = each.value.name
+  type            = each.value.type
+  records         = [each.value.value]
+  ttl             = 60
   allow_overwrite = true
 }
 
@@ -96,14 +96,17 @@ resource "aws_cloudfront_distribution" "web" {
     origin_access_control_id = aws_cloudfront_origin_access_control.web[0].id
   }
 
-  origin {
-    domain_name = replace(aws_apigatewayv2_api.httpapi[0].api_endpoint, "https://", "")
-    origin_id   = "api-origin"
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "https-only"
-      origin_ssl_protocols   = ["TLSv1.2"]
+  dynamic "origin" {
+    for_each = var.enable_apigw ? [1] : []
+    content {
+      domain_name = replace(aws_apigatewayv2_api.httpapi[0].api_endpoint, "https://", "")
+      origin_id   = "api-origin"
+      custom_origin_config {
+        http_port              = 80
+        https_port             = 443
+        origin_protocol_policy = "https-only"
+        origin_ssl_protocols   = ["TLSv1.2"]
+      }
     }
   }
 
@@ -116,15 +119,18 @@ resource "aws_cloudfront_distribution" "web" {
     cache_policy_id        = data.aws_cloudfront_cache_policy.optimized[0].id
   }
 
-  ordered_cache_behavior {
-    path_pattern           = "/api/*"
-    target_origin_id       = "api-origin"
-    viewer_protocol_policy = "redirect-to-https"
-    allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
-    cached_methods         = ["GET", "HEAD", "OPTIONS"]
-    compress               = true
-    cache_policy_id        = data.aws_cloudfront_cache_policy.disabled[0].id
-    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer_except_host[0].id
+  dynamic "ordered_cache_behavior" {
+    for_each = var.enable_apigw ? [1] : []
+    content {
+      path_pattern             = "/api/*"
+      target_origin_id         = "api-origin"
+      viewer_protocol_policy   = "redirect-to-https"
+      allowed_methods          = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+      cached_methods           = ["GET", "HEAD", "OPTIONS"]
+      compress                 = true
+      cache_policy_id          = data.aws_cloudfront_cache_policy.disabled[0].id
+      origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer_except_host[0].id
+    }
   }
 
   restrictions {
@@ -166,7 +172,7 @@ resource "aws_s3_bucket_policy" "web" {
 }
 
 resource "aws_route53_record" "web_alias_a" {
-  count  = var.enable_web ? 1 : 0
+  count   = var.enable_web ? 1 : 0
   zone_id = data.aws_route53_zone.primary[0].zone_id
   name    = var.service_domain
   type    = "A"
@@ -178,7 +184,7 @@ resource "aws_route53_record" "web_alias_a" {
 }
 
 resource "aws_route53_record" "web_alias_aaaa" {
-  count  = var.enable_web ? 1 : 0
+  count   = var.enable_web ? 1 : 0
   zone_id = data.aws_route53_zone.primary[0].zone_id
   name    = var.service_domain
   type    = "AAAA"
@@ -197,6 +203,16 @@ output "cloudfront_domain_name" {
 output "website_url" {
   value       = var.enable_web ? "https://${var.service_domain}" : null
   description = "Public website URL"
+}
+
+output "cloudfront_distribution_id" {
+  value       = var.enable_web && length(aws_cloudfront_distribution.web) > 0 ? aws_cloudfront_distribution.web[0].id : null
+  description = "CloudFront distribution ID"
+}
+
+output "web_bucket_name" {
+  value       = var.enable_web ? var.web_bucket_name : null
+  description = "S3 bucket name for static website"
 }
 
 

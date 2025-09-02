@@ -15,13 +15,23 @@ variable "region" {
 }
 
 provider "aws" {
-  region = var.region
+  region  = var.region
+  profile = "hhottdogg-deploy"
+  assume_role {
+    role_arn     = "arn:aws:iam::245040175511:role/TerraformDeployerRole"
+    session_name = "tf-apply"
+  }
 }
 
 # CloudFront requires ACM certificates in us-east-1
 provider "aws" {
-  alias  = "us_east_1"
-  region = "us-east-1"
+  alias   = "us_east_1"
+  region  = "us-east-1"
+  profile = "hhottdogg-deploy"
+  assume_role {
+    role_arn     = "arn:aws:iam::245040175511:role/TerraformDeployerRole"
+    session_name = "tf-apply"
+  }
 }
 
 

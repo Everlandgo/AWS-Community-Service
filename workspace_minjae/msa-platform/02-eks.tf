@@ -8,8 +8,8 @@ module "eks" {
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
 
-  cluster_endpoint_public_access  = true
-  cluster_endpoint_private_access = true
+  cluster_endpoint_public_access       = true
+  cluster_endpoint_private_access      = true
   cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"] # 운영 시 /32 로 축소
 
   enable_irsa = true
@@ -22,7 +22,7 @@ module "eks" {
       min_size       = 2
       desired_size   = 2
       max_size       = 4
-      labels = { role = "app" }
+      labels         = { role = "app" }
     }
     spot_arm = {
       ami_type       = "AL2023_ARM_64_STANDARD"
@@ -31,8 +31,8 @@ module "eks" {
       min_size       = 0
       desired_size   = 0
       max_size       = 6
-      labels = { role = "burst" }
-      taints = [{ key = "spotOnly", value = "true", effect = "NO_SCHEDULE" }]
+      labels         = { role = "burst" }
+      taints         = [{ key = "spotOnly", value = "true", effect = "NO_SCHEDULE" }]
     }
   }
 

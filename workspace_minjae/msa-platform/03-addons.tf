@@ -24,33 +24,33 @@ provider "helm" {
 }
 
 resource "time_sleep" "cluster_ready" {
-  depends_on     = [module.eks]
+  depends_on      = [module.eks]
   create_duration = "120s"
 }
 
 module "iam_irsa_alb" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "~> 5.34"
-  role_name_prefix                        = "irsa-alb-"
-  attach_load_balancer_controller_policy  = true
-  oidc_providers = { this = { provider_arn = module.eks.oidc_provider_arn, namespace_service_accounts = ["kube-system:aws-load-balancer-controller"] } }
+  source                                 = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version                                = "~> 5.34"
+  role_name_prefix                       = "irsa-alb-"
+  attach_load_balancer_controller_policy = true
+  oidc_providers                         = { this = { provider_arn = module.eks.oidc_provider_arn, namespace_service_accounts = ["kube-system:aws-load-balancer-controller"] } }
 }
 
 module "iam_irsa_ebs" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "~> 5.34"
-  role_name_prefix         = "irsa-ebs-"
-  attach_ebs_csi_policy    = true
-  oidc_providers = { this = { provider_arn = module.eks.oidc_provider_arn, namespace_service_accounts = ["kube-system:ebs-csi-controller-sa"] } }
+  source                = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version               = "~> 5.34"
+  role_name_prefix      = "irsa-ebs-"
+  attach_ebs_csi_policy = true
+  oidc_providers        = { this = { provider_arn = module.eks.oidc_provider_arn, namespace_service_accounts = ["kube-system:ebs-csi-controller-sa"] } }
 }
 
 module "iam_irsa_extdns" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "~> 5.34"
-  role_name_prefix               = "irsa-extdns-"
-  attach_external_dns_policy     = true
-  external_dns_hosted_zone_arns  = ["arn:aws:route53:::hostedzone/${var.hosted_zone_id}"]
-  oidc_providers = { this = { provider_arn = module.eks.oidc_provider_arn, namespace_service_accounts = ["kube-system:external-dns"] } }
+  source                        = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version                       = "~> 5.34"
+  role_name_prefix              = "irsa-extdns-"
+  attach_external_dns_policy    = true
+  external_dns_hosted_zone_arns = ["arn:aws:route53:::hostedzone/${var.hosted_zone_id}"]
+  oidc_providers                = { this = { provider_arn = module.eks.oidc_provider_arn, namespace_service_accounts = ["kube-system:external-dns"] } }
 }
 
 resource "helm_release" "alb" {
@@ -63,9 +63,9 @@ resource "helm_release" "alb" {
   version    = "1.8.1"
   depends_on = [time_sleep.cluster_ready]
   values = [yamlencode({
-    clusterName = module.eks.cluster_name
-    region      = var.region
-    vpcId       = module.vpc.vpc_id
+    clusterName    = module.eks.cluster_name
+    region         = var.region
+    vpcId          = module.vpc.vpc_id
     serviceAccount = { name = "aws-load-balancer-controller", annotations = { "eks.amazonaws.com/role-arn" = module.iam_irsa_alb.iam_role_arn } }
   })]
 }
@@ -79,7 +79,7 @@ resource "helm_release" "ebs" {
   namespace  = "kube-system"
   version    = "2.32.0"
   depends_on = [time_sleep.cluster_ready]
-  values = [yamlencode({ controller = { serviceAccount = { create = true, name = "ebs-csi-controller-sa", annotations = { "eks.amazonaws.com/role-arn" = module.iam_irsa_ebs.iam_role_arn } } } })]
+  values     = [yamlencode({ controller = { serviceAccount = { create = true, name = "ebs-csi-controller-sa", annotations = { "eks.amazonaws.com/role-arn" = module.iam_irsa_ebs.iam_role_arn } } } })]
 }
 
 resource "helm_release" "extdns" {
@@ -93,16 +93,16 @@ resource "helm_release" "extdns" {
   depends_on = [time_sleep.cluster_ready]
   values = [yamlencode({
     serviceAccount = { name = "external-dns", annotations = { "eks.amazonaws.com/role-arn" = module.iam_irsa_extdns.iam_role_arn } }
-    provider = "aws"
-    policy   = "upsert-only"
-    domainFilters = [var.domain]
-    txtOwnerId = "${var.project}-eks"
+    provider       = "aws"
+    policy         = "upsert-only"
+    domainFilters  = [var.domain]
+    txtOwnerId     = "${var.project}-eks"
   })]
 }
 
 resource "helm_release" "ingress" {
-  count           = var.enable_addons ? 1 : 0
-  provider        = helm.eks
+  count            = var.enable_addons ? 1 : 0
+  provider         = helm.eks
   name             = "ingress-nginx"
   repository       = "https://kubernetes.github.io/ingress-nginx"
   chart            = "ingress-nginx"
@@ -111,10 +111,10 @@ resource "helm_release" "ingress" {
   version          = "4.11.2"
   depends_on       = [time_sleep.cluster_ready, helm_release.alb]
   values = [yamlencode({ controller = { service = { annotations = {
-    "service.beta.kubernetes.io/aws-load-balancer-type"     = "nlb",
-    "service.beta.kubernetes.io/aws-load-balancer-internal" = "true",
+    "service.beta.kubernetes.io/aws-load-balancer-type"                     = "nlb",
+    "service.beta.kubernetes.io/aws-load-balancer-internal"                 = "true",
     "service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags" = "Project=${var.project},Env=${var.env},Component=ingress,Service=ingress-nginx-controller,ManagedBy=Terraform"
-  }}}})]
+  } } } })]
 }
 
 

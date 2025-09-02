@@ -4,12 +4,12 @@
 
 # EKS 클러스터 데이터 소스 (클러스터 생성 후 사용)
 data "aws_eks_cluster" "this" {
-  name = module.eks.cluster_name
+  name       = module.eks.cluster_name
   depends_on = [module.eks]
 }
 
 data "aws_eks_cluster_auth" "this" {
-  name = module.eks.cluster_name
+  name       = module.eks.cluster_name
   depends_on = [module.eks]
 }
 
@@ -31,40 +31,40 @@ provider "helm" {
 
 # IRSA (IAM Roles for Service Accounts) 모듈들
 module "iam_irsa_alb" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "~> 5.34"
-  role_name_prefix = "irsa-alb-"
+  source                                 = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version                                = "~> 5.34"
+  role_name_prefix                       = "irsa-alb-"
   attach_load_balancer_controller_policy = true
   oidc_providers = {
     this = {
-      provider_arn = module.eks.oidc_provider_arn
+      provider_arn               = module.eks.oidc_provider_arn
       namespace_service_accounts = ["kube-system:aws-load-balancer-controller"]
     }
   }
 }
 
 module "iam_irsa_ebs" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "~> 5.34"
-  role_name_prefix = "irsa-ebs-"
+  source                = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version               = "~> 5.34"
+  role_name_prefix      = "irsa-ebs-"
   attach_ebs_csi_policy = true
   oidc_providers = {
     this = {
-      provider_arn = module.eks.oidc_provider_arn
+      provider_arn               = module.eks.oidc_provider_arn
       namespace_service_accounts = ["kube-system:ebs-csi-controller-sa"]
     }
   }
 }
 
 module "iam_irsa_extdns" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "~> 5.34"
-  role_name_prefix = "irsa-extdns-"
-  attach_external_dns_policy = true
+  source                        = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version                       = "~> 5.34"
+  role_name_prefix              = "irsa-extdns-"
+  attach_external_dns_policy    = true
   external_dns_hosted_zone_arns = ["arn:aws:route53:::hostedzone/Z07840551WEY8ZLTWDLBJ"]
   oidc_providers = {
     this = {
-      provider_arn = module.eks.oidc_provider_arn
+      provider_arn               = module.eks.oidc_provider_arn
       namespace_service_accounts = ["kube-system:external-dns"]
     }
   }
@@ -92,7 +92,7 @@ resource "helm_release" "alb" {
     region      = "ap-northeast-2"
     vpcId       = module.vpc.vpc_id
     serviceAccount = {
-      name = "aws-load-balancer-controller"
+      name        = "aws-load-balancer-controller"
       annotations = { "eks.amazonaws.com/role-arn" = module.iam_irsa_alb.iam_role_arn }
     }
   })]
@@ -115,8 +115,8 @@ resource "helm_release" "ebs" {
   values = [yamlencode({
     controller = {
       serviceAccount = {
-        create = true
-        name   = "ebs-csi-controller-sa"
+        create      = true
+        name        = "ebs-csi-controller-sa"
         annotations = { "eks.amazonaws.com/role-arn" = module.iam_irsa_ebs.iam_role_arn }
       }
     }
@@ -133,19 +133,19 @@ resource "helm_release" "extdns" {
   version    = "1.15.0"
   values = [yamlencode({
     serviceAccount = {
-      name = "external-dns"
+      name        = "external-dns"
       annotations = { "eks.amazonaws.com/role-arn" = module.iam_irsa_extdns.iam_role_arn }
     }
-    provider     = "aws"
-    policy       = "upsert-only"
+    provider      = "aws"
+    policy        = "upsert-only"
     domainFilters = [var.domain]
-    txtOwnerId   = "${var.project}-eks"
+    txtOwnerId    = "${var.project}-eks"
   })]
 }
 
 # Ingress Nginx
 resource "helm_release" "ingress" {
-  depends_on = [time_sleep.cluster_ready, time_sleep.alb_ready]
+  depends_on       = [time_sleep.cluster_ready, time_sleep.alb_ready]
   name             = "ingress-nginx"
   repository       = "https://kubernetes.github.io/ingress-nginx"
   chart            = "ingress-nginx"
@@ -156,9 +156,9 @@ resource "helm_release" "ingress" {
     controller = {
       service = {
         annotations = {
-          "service.beta.kubernetes.io/aws-load-balancer-type"     = "nlb"
-          "service.beta.kubernetes.io/aws-load-balancer-internal" = "true"
-          "service.beta.kubernetes.io/aws-load-balancer-name"      = "msa-forum-ingress-nlb"
+          "service.beta.kubernetes.io/aws-load-balancer-type"                     = "nlb"
+          "service.beta.kubernetes.io/aws-load-balancer-internal"                 = "true"
+          "service.beta.kubernetes.io/aws-load-balancer-name"                     = "msa-forum-ingress-nlb"
           "service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags" = "kubernetes.io/service-name=ingress-nginx/ingress-nginx-controller"
         }
       }
@@ -198,10 +198,10 @@ resource "helm_release" "cluster_autoscaler" {
       }
     }
     extraArgs = {
-      balance-similar-node-groups           = true
-      skip-nodes-with-local-storage         = false
-      skip-nodes-with-system-pods           = false
-      expander                              = "least-waste"
+      balance-similar-node-groups   = true
+      skip-nodes-with-local-storage = false
+      skip-nodes-with-system-pods   = false
+      expander                      = "least-waste"
     }
   })]
 }
@@ -216,22 +216,22 @@ resource "helm_release" "node_termination_handler" {
   version    = "0.21.0"
 
   values = [yamlencode({
-    enableSqsTerminationDraining = false
+    enableSqsTerminationDraining   = false
     enableSpotInterruptionDraining = true
-    enableRebalanceDraining = true
+    enableRebalanceDraining        = true
     nodeSelector = {
       "kubernetes.io/arch" = "arm64"
     }
     tolerations = [
       {
-        key = "spotOnly"
+        key      = "spotOnly"
         operator = "Exists"
-        effect = "NoSchedule"
+        effect   = "NoSchedule"
       },
       {
-        key = "amd64Only"
+        key      = "amd64Only"
         operator = "Exists"
-        effect = "NoSchedule"
+        effect   = "NoSchedule"
       }
     ]
   })]

@@ -46,15 +46,15 @@ resource "aws_iam_role" "codebuild" {
 
 data "aws_iam_policy_document" "cb_policy" {
   statement {
-    actions   = ["logs:CreateLogGroup","logs:CreateLogStream","logs:PutLogEvents"]
+    actions   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
     resources = ["arn:aws:logs:${var.region}:${data.aws_caller_identity.current.account_id}:*"]
   }
   statement {
-    actions   = ["s3:GetObject","s3:PutObject","s3:ListBucket"]
+    actions   = ["s3:GetObject", "s3:PutObject", "s3:ListBucket"]
     resources = [aws_s3_bucket.artifacts.arn, "${aws_s3_bucket.artifacts.arn}/*"]
   }
   statement {
-    actions   = ["ecr:GetAuthorizationToken","ecr:BatchCheckLayerAvailability","ecr:InitiateLayerUpload","ecr:UploadLayerPart","ecr:CompleteLayerUpload","ecr:PutImage","ecr:DescribeRepositories","ecr:BatchGetImage"]
+    actions   = ["ecr:GetAuthorizationToken", "ecr:BatchCheckLayerAvailability", "ecr:InitiateLayerUpload", "ecr:UploadLayerPart", "ecr:CompleteLayerUpload", "ecr:PutImage", "ecr:DescribeRepositories", "ecr:BatchGetImage"]
     resources = ["*"]
   }
 }
@@ -78,12 +78,22 @@ resource "aws_codebuild_project" "build" {
     image           = "aws/codebuild/standard:7.0"
     type            = "LINUX_CONTAINER"
     privileged_mode = true
-    environment_variable = [
-      { name = "AWS_DEFAULT_REGION", value = var.region },
-      { name = "REPO_NAME", value = "myapp" },
-      { name = "APP_NAME", value = "myapp" },
-      { name = "K8S_NAMESPACE", value = "default" }
-    ]
+    environment_variable {
+      name  = "AWS_DEFAULT_REGION"
+      value = var.region
+    }
+    environment_variable {
+      name  = "REPO_NAME"
+      value = "myapp"
+    }
+    environment_variable {
+      name  = "APP_NAME"
+      value = "myapp"
+    }
+    environment_variable {
+      name  = "K8S_NAMESPACE"
+      value = "default"
+    }
   }
 
   source {
@@ -116,7 +126,7 @@ resource "aws_iam_role" "codepipeline" {
 
 data "aws_iam_policy_document" "cp_policy" {
   statement {
-    actions   = ["s3:GetObject","s3:GetObjectVersion","s3:PutObject"]
+    actions   = ["s3:GetObject", "s3:GetObjectVersion", "s3:PutObject"]
     resources = ["${aws_s3_bucket.artifacts.arn}/*"]
   }
   statement {
@@ -124,7 +134,7 @@ data "aws_iam_policy_document" "cp_policy" {
     resources = [aws_s3_bucket.artifacts.arn]
   }
   statement {
-    actions   = ["codebuild:BatchGetBuilds","codebuild:StartBuild"]
+    actions   = ["codebuild:BatchGetBuilds", "codebuild:StartBuild"]
     resources = [aws_codebuild_project.build.arn]
   }
   statement {
@@ -216,6 +226,9 @@ resource "aws_eks_access_policy_association" "cp_admin" {
   cluster_name  = module.eks.cluster_name
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
   principal_arn = aws_iam_role.codepipeline.arn
+  access_scope {
+    type = "cluster"
+  }
 }
 
 output "pipeline_name" {
