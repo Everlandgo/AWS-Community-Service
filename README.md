@@ -23,9 +23,9 @@ cd AWS-Community-Service
 # ============================================
 # AWS Cognito 설정
 # ============================================
-COGNITO_USER_POOL_ID=ap-northeast-2_HnquQbxZ4
+COGNITO_USER_POOL_ID=your_pool_id
 COGNITO_REGION=ap-northeast-2
-COGNITO_CLIENT_ID=47fnsb2rstr5ssi0lb68r2jeat
+COGNITO_CLIENT_ID=your_client_id
 
 # ============================================
 # AWS 자격 증명
