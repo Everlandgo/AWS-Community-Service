@@ -11,10 +11,8 @@ from flask_swagger_ui import get_swaggerui_blueprint
 from werkzeug.exceptions import HTTPException, NotFound
 from flask_migrate import Migrate
 from sqlalchemy import text
-
-# Comment 서비스 전용 모델과 라우트 import - 독립적인 모델 사용
-from comment.models import db
-from comment.routes import bp
+from comment.models import db  # Comment 모델 import
+from comment.routes import bp  # Comment 라우트 import
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -23,16 +21,17 @@ logger = logging.getLogger(__name__)
 def create_app(config_class=None):
     """Flask 애플리케이션 팩토리"""
     app = Flask(__name__)
-    
+
     # 설정 로드
     if config_class:
         app.config.from_object(config_class)
     else:
+        # config.py의 Config 클래스 사용
         from config import Config
         app.config.from_object(Config)
 
-    # CORS 설정 - 더 간단하고 명확하게
-    CORS(app, 
+    # CORS 설정
+    CORS(app,
          origins=["http://localhost:3000", "http://localhost:8080"],
          methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
          allow_headers=["Content-Type", "Authorization"],
@@ -42,14 +41,21 @@ def create_app(config_class=None):
     # 데이터베이스 초기화
     db.init_app(app)
     Migrate(app, db)
-    
-    # 데이터베이스 테이블 생성
+
+    # 테이블 생성 - 연결 실패 시에도 애플리케이션은 계속 실행
     with app.app_context():
         try:
+            # 데이터베이스 연결 테스트
+            db.session.execute(text('SELECT 1'))
+            logger.info("Database connection test successful")
+            
+            # 테이블 생성
             db.create_all()
             logger.info("Database tables created successfully")
         except Exception as e:
-            logger.error(f"Failed to create database tables: {e}")
+            logger.error(f"Database initialization failed: {e}")
+            logger.warning("Application will continue without database initialization")
+            # 연결 실패 시에도 애플리케이션은 계속 실행
 
     # Swagger UI 설정
     SWAGGER_URL = '/api/docs'
@@ -57,9 +63,7 @@ def create_app(config_class=None):
     swaggerui_blueprint = get_swaggerui_blueprint(
         SWAGGER_URL,
         API_URL,
-        config={
-            'app_name': "Comment Service API"
-        }
+        config={'app_name': "Comment Service API"}
     )
     app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 
@@ -84,7 +88,6 @@ def create_app(config_class=None):
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
         response.headers.add('Access-Control-Max-Age', '86400')
         return response
-
 
     # 전역 에러 핸들러
     @app.errorhandler(HTTPException)
@@ -125,7 +128,6 @@ def create_app(config_class=None):
     @app.route('/health', methods=['GET'])
     def health():
         try:
-            # 데이터베이스 연결 상태 확인 - SQLAlchemy 2.0 호환성
             db.session.execute(text('SELECT 1'))
             db_status = 'connected'
         except Exception as e:
